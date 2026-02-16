@@ -1,42 +1,42 @@
-name: Deploy backend to AWS Lambda
+# name: Deploy backend to AWS Lambda
 
-on:
-  push:
-    branches: [ main ]
-    paths:
-      - 'backend/**'
+# on:
+#   push:
+#     branches: [ main ]
+#     paths:
+#       - 'backend/**'
 
-jobs:
-  deploy:
-    runs-on: ubuntu-latest
+# jobs:
+#   deploy:
+#     runs-on: ubuntu-latest
 
-    permissions:
-      id-token: write
-      contents: read
+#     permissions:
+#       id-token: write
+#       contents: read
 
-    defaults:
-      run:
-        working-directory: backend
+#     defaults:
+#       run:
+#         working-directory: backend
 
-    steps:
-      - uses: actions/checkout@v4
+#     steps:
+#       - uses: actions/checkout@v4
 
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '18'
+#       - uses: actions/setup-node@v4
+#         with:
+#           node-version: '18'
 
-      - name: Install dependencies
-        run: npm ci
+#       - name: Install dependencies
+#         run: npm ci
 
-      - name: Install Serverless CLI
-        run: npm install -g serverless@3
+#       - name: Install Serverless CLI
+#         run: npm install -g serverless@3
 
-      - name: Configure AWS credentials (OIDC)
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          role-to-assume: arn:aws:iam::616421593714:role/official_github_deploy
-          aws-region: eu-west-3
+#       - name: Configure AWS credentials (OIDC)
+#         uses: aws-actions/configure-aws-credentials@v4
+#         with:
+#           role-to-assume: arn:aws:iam::616421593714:role/official_github_deploy
+#           aws-region: eu-west-3
 
-      - name: Deploy with Serverless
-        run: npx serverless deploy
+#       - name: Deploy with Serverless
+#         run: npx serverless deploy
 
