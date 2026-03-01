@@ -1,0 +1,128 @@
+---
+description: Modèle de connexion/inscription (native + OAuth Google/Apple), JWT access + refresh token, restauration de session. À suivre pour tout système d'auth.
+globs: backend/**/auth*.js, backend/**/oauth*.js, backend/middlewares/auth*.js, frontend/**/auth*, frontend/**/useAuth*, frontend/utils/api.js
+alwaysApply: false
+---
+
+# Authentification : connexion, inscription, tokens et OAuth
+
+Lorsque l’on implémente ou modifie un **système de connexion / inscription** dans ce projet, respecter la structure et le fonctionnement décrits ci-dessous (pas la forme UI, mais la logique et l’architecture).
+
+---
+
+## Convention variables d’environnement
+
+- **Toutes les variables d’environnement nécessaires** à l’auth (backend et frontend) doivent être **déclarées dans les fichiers `.env.example`** (backend et/ou frontend), **même vides**.
+- Objectif : qu’un nouveau dev ou un déploiement sache quelles clés compléter, sans chercher dans le code.
+- Ne jamais committer de secrets en clair dans le repo ; en prod, utiliser les variables du déploiement (serverless, Amplify, etc.).
+
+### Backend (backend/.env.example)
+
+Variables à prévoir pour l’auth (exemples ; laisser vides ou placeholder si besoin) :
+
+```
+# JWT (obligatoires pour login/refresh)
+JWT_SECRET=
+JWT_REFRESH_SECRET=
+
+# OAuth Google (connexion/inscription Google)
+# Créer des identifiants : https://console.cloud.google.com/apis/credentials
+GOOGLE_CLIENT_ID=
+
+# OAuth Apple (connexion/inscription Apple)
+# Créer un Service ID "Sign in with Apple" : https://developer.apple.com
+APPLE_CLIENT_ID=
+
+# CORS (origine du front autorisée, sans slash final)
+CORS_ORIGIN=http://localhost:5173
+```
+
+En local, copier `.env.example` vers `.env` et remplir les valeurs. En prod (ex. Lambda), définir les mêmes noms dans `serverless.yml` (provider.environment) ou via SSM/Secrets Manager.
+
+---
+
+## Architecture backend
+
+### Modèle utilisateur (User)
+
+- Champs utiles pour l’auth : `id`, `username`, `email`, `password` (nullable pour OAuth), `email_verified`, `auth_provider` ('local' | 'google' | 'apple'), `google_id`, `apple_id`, **`refresh_token`** (stockage du refresh token courant).
+- Plan d’abonnement : `subscription_plan` (ex. 'free', 'pro', 'premium') si le projet gère des abonnements.
+
+### Service auth (auth.service.js)
+
+- **Inscription native** : enregistrement en attente (ex. table `pending_registration` ou équivalent) avec token de vérification email ; envoi d’un email avec lien ; l’utilisateur n’est créé qu’au clic (verifyEmail). Mot de passe hashé avec bcrypt (SALT_ROUNDS ~10).
+- **Vérification email** : lecture du token, création du User, envoi email bienvenue, puis **création de session** (voir ci-dessous).
+- **Connexion native** : vérification email + mot de passe (bcrypt.compare), puis création de session.
+- **Connexion / inscription OAuth (Google, Apple)** : vérification du token côté serveur (idToken), récupération `sub` + `email` ; si un User existe avec ce `google_id` / `apple_id` → connexion ; sinon si email existant → lier le compte (mettre à jour `google_id`/`apple_id`, `auth_provider`) ; sinon création d’un nouveau User. Toujours terminer par **création de session**.
+- **Session = tokens** : une méthode privée `createTokens(userId)` génère :
+  - **Access token** : JWT signé avec `JWT_SECRET`, payload `{ user_id }`, `expiresIn` court (ex. `'15m'`).
+  - **Refresh token** : JWT signé avec `JWT_REFRESH_SECRET`, payload `{ user_id, jti }`, `expiresIn` long (ex. `'7d'`).
+- **Sauvegarde du refresh token** : persister le refresh token dans `User.refresh_token` (ou table dédiée) pour pouvoir l’invalider.
+- **Refresh** : route dédiée qui reçoit le refresh token (cookie ou body), vérifie le JWT et que `User.refresh_token` correspond, puis génère une **nouvelle paire** access + refresh, met à jour le refresh en base, et renvoie les deux.
+
+Les contrôleurs ne doivent pas contenir la logique métier JWT/OAuth ; ils appellent le service et renvoient les tokens + user au client.
+
+### Routes auth (ex. auth.route.js)
+
+- `POST /auth/register` — inscription (pas de token requis).
+- `POST /auth/verify-email` — body `{ token }`, crée le User et renvoie `{ user, accessToken, refreshToken }`.
+- `POST /auth/resend-verification` — renvoi email de vérification.
+- `POST /auth/login` — body `{ email, password }` → `{ user, accessToken, refreshToken }`.
+- `POST /auth/google` — body `{ idToken }` → `{ user, accessToken, refreshToken }`.
+- `POST /auth/apple` — body `{ idToken, userName? }` → `{ user, accessToken, refreshToken }`.
+- `POST /auth/refresh` — body `{ refreshToken }` ou cookie `refreshToken` → `{ accessToken, refreshToken }`.
+- `GET /auth/me` — **protégé** par le middleware auth ; renvoie le profil de l’utilisateur connecté (pour restauration de session).
+
+Réponses : toujours JSON. En cas d’erreur (identifiants incorrects, token expiré, etc.), renvoyer un message clair et un code HTTP adapté (401, 400, 409, etc.).
+
+### Middleware d’auth
+
+- Lire le header `Authorization: Bearer <accessToken>`.
+- Vérifier le JWT avec `JWT_SECRET` ; en cas de succès, attacher `req.user_id = decoded.user_id` et `next()`.
+- En cas d’échec ou d’absence de token : répondre `401` (ex. `{ error: 'No token!' }` ou 'Token expired or invalid!').
+- Optionnel : un middleware “auth optionnel” qui remplit `req.user_id` si le token est valide, sinon laisse passer sans erreur (pour les routes publiques qui s’adaptent selon la connexion).
+
+---
+
+## Architecture frontend
+
+### Client API (utils/api.js)
+
+- Une instance axios unique avec `baseURL` construite depuis les variables d’environnement (ex. `VITE_PROTOCOLE`, `VITE_SERVER_HOST`, `VITE_SERVER_PORT`).
+- **withCredentials: true** si le backend pose un cookie refresh token.
+- **Interceptor requête** : ajouter `Authorization: Bearer <accessToken>` à chaque requête, en lisant `accessToken` depuis `localStorage` (ou équivalent).
+- **Interceptor réponse** : en cas de **401** :
+  - Ne pas tenter de refresh sur les routes de login/register/OAuth (sinon boucle ou mauvaise UX).
+  - Éviter les boucles en marquant la requête (ex. `config._retry`) et ne pas re-tenter le refresh si déjà fait.
+  - Sinon : appeler `POST /auth/refresh` avec le `refreshToken` (localStorage ou cookie), récupérer la nouvelle paire, mettre à jour localStorage (et cookie si utilisé), puis **rejouer la requête** avec le nouveau access token.
+  - Si le refresh échoue : supprimer access + refresh du storage et rediriger vers la page de login (sauf cas particulier ex. mode démo).
+
+### Stockage des tokens
+
+- **Access token** et **refresh token** : stockés en `localStorage` (ex. `accessToken`, `refreshToken`) après login, verifyEmail, Google, Apple.
+- **User** : objet user (id, username, email, subscription_plan, etc.) peut être stocké en `localStorage` pour affichage immédiat après rechargement, en attendant le résultat de `getMe()`.
+
+### Contexte auth (AuthProvider / useAuth)
+
+- **État** : `user` (objet ou null), `loading` (booléen).
+- **Actions** : `login(email, password)`, `register(username, email, password)`, `verifyEmail(token)`, `loginWithGoogle(idToken)`, `loginWithApple(idToken, userName?)`, `logout`.
+- Après chaque login réussi (native, verifyEmail, Google, Apple) : appeler une fonction `saveSession(accessToken, userData, refreshToken)` qui écrit en localStorage et met à jour `user`.
+- **logout** : supprimer accessToken, refreshToken, user du localStorage et remettre `user` à null.
+- **Restauration de session au chargement** : si `accessToken` **ou** `refreshToken` est présent, appeler **getMe()** (GET /auth/me) pour récupérer le profil. Ne pas déconnecter uniquement parce que l’access token est expiré : l’interceptor fera le refresh puis getMe() réussira. En cas de 401 non récupéré (ex. refresh échoué), appeler logout. Sinon mettre à jour `user` avec la réponse de getMe().
+- Exposer un hook `useAuth()` qui retourne `{ user, loading, login, register, verifyEmail, loginWithGoogle, loginWithApple, logout }` (et éventuellement resendVerificationEmail).
+
+### Utilitaires API auth (ex. authApi.js)
+
+- Fonctions qui appellent l’instance `api` (celle avec interceptors) : `login`, `register`, `verifyEmail`, `resendVerificationEmail`, `loginWithGoogle`, `loginWithApple`, `getMe`. Retourner les données (user, accessToken, refreshToken) pour que le contexte auth les utilise.
+
+---
+
+## Récapitulatif flux
+
+1. **Inscription** : formulaire → POST /auth/register → email de vérification → utilisateur clique sur le lien → POST /auth/verify-email avec token → backend crée User, envoie tokens + user → frontend saveSession + redirection.
+2. **Connexion native** : email + mot de passe → POST /auth/login → tokens + user → saveSession.
+3. **Connexion Google/Apple** : SDK côté client fournit idToken → POST /auth/google ou /auth/apple → tokens + user → saveSession.
+4. **Restauration** : au chargement de l’app, si token(s) en storage → getMe() ; si 401, interceptor tente refresh → rejouer getMe() ; si succès, user affiché ; si refresh échoue, redirect login.
+5. **Déconnexion** : logout() supprime les tokens et user du storage et du state.
+
+En suivant ce modèle, tout nouveau système de connexion/inscription (ou évolution) restera cohérent avec le projet (tokens, refresh, OAuth, variables d’environnement documentées dans .env.example).
