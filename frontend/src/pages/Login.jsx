@@ -168,7 +168,7 @@ export default function Login() {
           <button
             type="submit"
             disabled={loading}
-            className="sf-cta-button w-full flex items-center justify-center gap-2 bg-[var(--sf-cta)] hover:opacity-90 disabled:opacity-60 disabled:cursor-not-allowed"
+            className="sf-cta-button w-full flex items-center justify-center gap-2 bg-[var(--sf-cta)] hover:opacity-90 disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer rounded-lg transition-colors"
             style={{ color: 'var(--sf-cta-text)' }}
           >
             {loading ? (
@@ -190,7 +190,7 @@ export default function Login() {
             setIsSignUp((s) => !s);
             setError(null);
           }}
-          className="w-full mt-5 text-center text-sm transition-colors"
+          className="w-full mt-5 text-center text-sm transition-colors hover:text-[var(--sf-text)] cursor-pointer"
           style={{ color: 'var(--sf-text-muted)' }}
         >
           {isSignUp ? 'Déjà un compte ? Se connecter' : 'Pas encore de compte ? Créer un compte'}

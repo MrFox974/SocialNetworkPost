@@ -48,8 +48,8 @@ export default function VerifyEmail() {
             <button
               type="button"
               onClick={() => navigate('/login', { replace: true })}
-              className="mt-4 sf-cta-button px-4 py-2"
-              style={{ color: 'var(--sf-cta-text)' }}
+              className="mt-4 sf-cta-button px-4 py-2 rounded-lg transition-colors hover:opacity-90 cursor-pointer"
+              style={{ color: 'var(--sf-cta-text)', backgroundColor: 'var(--sf-cta)' }}
             >
               Retour à la connexion
             </button>

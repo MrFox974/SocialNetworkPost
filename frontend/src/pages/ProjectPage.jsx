@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useParams, useNavigate, useLocation, Link } from 'react-router-dom';
 
 const BODY_SCROLLBAR_CLASS = 'sf-page-hide-scrollbar';
@@ -7,6 +7,7 @@ import { generateProposals } from '../utils/speechApi';
 import { getProject, updateProject } from '../utils/projectApi';
 import { useToast } from '../contexts/ToastContext';
 import SpeechCardSkeleton from '../components/SpeechCardSkeleton';
+import { toDisplayId } from '../utils/format';
 
 const MAX_DRAFTS = 50;
 
@@ -54,6 +55,10 @@ export default function ProjectPage() {
   const [quickEditSaving, setQuickEditSaving] = useState(false);
   const [selectionActionItem, setSelectionActionItem] = useState(null);
   const [selectionActionLoading, setSelectionActionLoading] = useState(false);
+  const [editingProjectName, setEditingProjectName] = useState(false);
+  const [projectNameEdit, setProjectNameEdit] = useState('');
+  const [savingProjectName, setSavingProjectName] = useState(false);
+  const projectNameInputRef = useRef(null);
 
   const fetchProject = useCallback(async () => {
     try {
@@ -65,6 +70,33 @@ export default function ProjectPage() {
       navigate('/dashboard');
     }
   }, [projectId, navigate, addToast]);
+
+  useEffect(() => {
+    if (editingProjectName && projectNameInputRef.current) {
+      projectNameInputRef.current.focus();
+      projectNameInputRef.current.select();
+    }
+  }, [editingProjectName]);
+
+  const handleSaveProjectName = useCallback(async () => {
+    if (!project || !projectId) return;
+    const trimmed = projectNameEdit.trim() || project.name;
+    if (trimmed === project.name) {
+      setEditingProjectName(false);
+      return;
+    }
+    setSavingProjectName(true);
+    try {
+      const p = await updateProject(projectId, { name: trimmed });
+      setProject(p);
+      setEditingProjectName(false);
+      addToast('Nom du projet enregistré ✓', 'success');
+    } catch (err) {
+      addToast(err.response?.data?.error || 'Impossible d\'enregistrer le nom', 'error');
+    } finally {
+      setSavingProjectName(false);
+    }
+  }, [project, projectId, projectNameEdit, addToast]);
 
   const fetchSpeeches = useCallback(async () => {
     try {
@@ -170,6 +202,40 @@ CTA: ${s.cta || ''}`;
       setSelected((prev) => prev.filter((s) => s.id !== id));
       setProposals((prev) => prev.map((s) => (s.id === id ? { ...s, in_selection: false } : s)));
       addToast('Retiré de la sélection', 'info');
+    } catch (err) {
+      addToast(`Erreur : ${err.response?.data?.error || err.message}`, 'error');
+    }
+  };
+
+  const handleAddToSelection = async (id) => {
+    try {
+      await api.put(`/api/speeches/${id}`, { in_selection: true });
+      setProposals((prev) => prev.map((s) => (s.id === id ? { ...s, in_selection: true } : s)));
+      setSelected((prev) => {
+        if (prev.some((s) => s.id === id)) return prev;
+        const item = proposals.find((s) => s.id === id);
+        return item ? [...prev, { ...item, in_selection: true }] : prev;
+      });
+      addToast('Ajouté à la sélection', 'success');
+    } catch (err) {
+      addToast(`Erreur : ${err.response?.data?.error || err.message}`, 'error');
+    }
+  };
+
+  const handlePublishFromSelection = async (id) => {
+    try {
+      const publishedAt = new Date().toISOString();
+      await api.put(`/api/speeches/${id}`, {
+        status: 'published',
+        published_at: publishedAt,
+        in_selection: false,
+      });
+      const source = [...proposals, ...selected].find((s) => s.id === id);
+      const updated = source ? { ...source, status: 'published', published_at: publishedAt, in_selection: false } : null;
+      setSelected((prev) => prev.filter((s) => s.id !== id));
+      setProposals((prev) => prev.filter((s) => s.id !== id));
+      if (updated) setPublished((prev) => [updated, ...prev.filter((s) => s.id !== id)]);
+      addToast('Script mis en ligne ✓', 'success');
     } catch (err) {
       addToast(`Erreur : ${err.response?.data?.error || err.message}`, 'error');
     }
@@ -311,9 +377,38 @@ CTA: ${s.cta || ''}`;
         >
           ←
         </Link>
-        <div>
+        <div className="min-w-0 flex-1">
           <p className="sf-section-label">03 — Projet</p>
-          <h1 className="sf-heading-display truncate">{project.name}</h1>
+          {editingProjectName ? (
+            <input
+              ref={projectNameInputRef}
+              type="text"
+              value={projectNameEdit}
+              onChange={(e) => setProjectNameEdit(e.target.value)}
+              onBlur={handleSaveProjectName}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') e.target.blur();
+                if (e.key === 'Escape') {
+                  setProjectNameEdit(project.name);
+                  setEditingProjectName(false);
+                }
+              }}
+              disabled={savingProjectName}
+              className="sf-heading-display w-full truncate bg-transparent border-b-2 border-[var(--sf-cta)] outline-none py-0.5"
+              style={{ fontFamily: 'var(--sf-heading-font)', color: 'var(--sf-text)' }}
+            />
+          ) : (
+            <h1
+              className="sf-heading-display truncate cursor-text select-none"
+              onDoubleClick={() => {
+                setProjectNameEdit(project.name);
+                setEditingProjectName(true);
+              }}
+              title="Double-clic pour modifier"
+            >
+              {project.name}
+            </h1>
+          )}
         </div>
       </div>
 
@@ -423,7 +518,7 @@ CTA: ${s.cta || ''}`;
               <p className="text-sm text-[var(--sf-text-dim)]">Clique sur Générer 7 scripts pour commencer</p>
             </div>
           ) : (
-            <div className="space-y-2">
+            <div className="space-y-4">
               {generating && [1, 2, 3, 4, 5, 6, 7].map((i) => <SpeechCardSkeleton key={`skeleton-${i}`} />)}
               {proposals.map((s) => (
                 <div
@@ -443,9 +538,20 @@ CTA: ${s.cta || ''}`;
                     <div className="text-sm text-[var(--sf-text)] line-clamp-3">{truncateLines(s.demo)}</div>
                     <div className="text-sm text-[var(--sf-text)] line-clamp-3">{truncateLines(s.cta)}</div>
                   </div>
-                  <div className="flex items-center justify-between px-4 py-3 border-t border-[var(--sf-border)] bg-[var(--sf-card-hover)]">
-                    <span className="text-xs text-[var(--sf-text-dim)]">ID {s.id}</span>
+                    <div className="flex items-center justify-between px-4 py-0 border-t border-[var(--sf-border)] bg-[var(--sf-card-hover)]">
+                    <span className="text-xs text-[var(--sf-text-dim)]">ID {toDisplayId(s.id)}</span>
                     <div className="flex items-center gap-1">
+                      <button
+                        type="button"
+                        data-action
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleAddToSelection(s.id);
+                        }}
+                        className="px-2.5 py-1.5 rounded text-xs font-medium border transition-colors cursor-pointer text-[var(--sf-accent)] border-[var(--sf-accent)]/50 hover:bg-[var(--sf-accent)]/15"
+                      >
+                        Sélectionner
+                      </button>
                       <button
                         type="button"
                         data-action
@@ -453,9 +559,13 @@ CTA: ${s.cta || ''}`;
                           e.stopPropagation();
                           navigate(`/dashboard/speech/${s.id}`, { state: { fromProject: projectId } });
                         }}
-                        className="px-2.5 py-1.5 rounded text-xs font-medium text-[var(--sf-text-muted)] hover:text-[var(--sf-text)] hover:bg-[var(--sf-card-hover)] transition-colors"
+                        className="w-8 h-8 flex items-center justify-center rounded text-[var(--sf-text-dim)] hover:text-blue-400 hover:bg-[var(--sf-card-hover)] transition-colors"
+                        title="Ouvrir l'interface complète (édition)"
                       >
-                        Édition
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z" />
+                          <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1Z" />
+                        </svg>
                       </button>
                       <button
                         type="button"
@@ -501,7 +611,7 @@ CTA: ${s.cta || ''}`;
               <p className="text-sm text-[var(--sf-text-dim)]">Ouvre une proposition et clique sur « Mettre en sélection »</p>
             </div>
           ) : (
-            <div className="space-y-2">
+            <div className="space-y-4">
               {selected.map((s) => (
                 <div
                   key={s.id}
@@ -522,36 +632,47 @@ CTA: ${s.cta || ''}`;
                     <div className="text-sm text-[var(--sf-text)] line-clamp-3">{truncateLines(s.demo)}</div>
                     <div className="text-sm text-[var(--sf-text)] line-clamp-3">{truncateLines(s.cta)}</div>
                   </div>
-                  <div className="flex items-center justify-between px-4 py-3 border-t border-[var(--sf-border)] bg-[var(--sf-card-hover)]">
-                    <span className="text-xs text-[var(--sf-text-dim)]">ID {s.id}</span>
+                  <div className="flex items-center justify-between px-4 py-0 border-t border-[var(--sf-border)] bg-[var(--sf-card-hover)]">
+                    <span className="text-xs text-[var(--sf-text-dim)]">ID {toDisplayId(s.id)}</span>
                     <div className="flex items-center gap-1">
-                    <button
-                      type="button"
-                      data-action
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        navigate(`/dashboard/speech/${s.id}`, { state: { fromProject: projectId, returnTab: 'selection' } });
-                      }}
-                      className="w-8 h-8 flex items-center justify-center rounded text-[var(--sf-text-dim)] hover:text-blue-400 hover:bg-[var(--sf-card-hover)] transition-colors"
-                      title="Ouvrir l’interface complète (cartés réseaux et édition)"
-                    >
-                      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z" />
-                        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1Z" />
-                      </svg>
-                    </button>
-                    <button
-                      type="button"
-                      data-action
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setSelectionActionItem(s);
-                      }}
-                      className="w-8 h-8 flex items-center justify-center rounded text-[var(--sf-text-dim)] hover:text-red-400 hover:bg-[var(--sf-card-hover)] transition-colors"
-                      title="Options"
-                    >
-                      ×
-                    </button>
+                      <button
+                        type="button"
+                        data-action
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handlePublishFromSelection(s.id);
+                        }}
+                        className="px-2.5 py-1.5 rounded text-xs font-medium border transition-colors cursor-pointer text-blue-400 border-blue-500/50 hover:bg-blue-500/20"
+                      >
+                        Mettre en ligne
+                      </button>
+                      <button
+                        type="button"
+                        data-action
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          navigate(`/dashboard/speech/${s.id}`, { state: { fromProject: projectId, returnTab: 'selection' } });
+                        }}
+                        className="w-8 h-8 flex items-center justify-center rounded text-[var(--sf-text-dim)] hover:text-blue-400 hover:bg-[var(--sf-card-hover)] transition-colors"
+                        title="Ouvrir l'interface complète (cartés réseaux et édition)"
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z" />
+                          <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1Z" />
+                        </svg>
+                      </button>
+                      <button
+                        type="button"
+                        data-action
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setSelectionActionItem(s);
+                        }}
+                        className="w-8 h-8 flex items-center justify-center rounded text-[var(--sf-text-dim)] hover:text-red-400 hover:bg-[var(--sf-card-hover)] transition-colors"
+                        title="Options"
+                      >
+                        ×
+                      </button>
                     </div>
                   </div>
                 </div>
@@ -628,7 +749,7 @@ CTA: ${s.cta || ''}`;
                 type="button"
                 onClick={() => !quickEditSaving && setQuickEditItem(null)}
                 disabled={quickEditSaving}
-                className="px-4 py-2.5 rounded-lg border border-[var(--sf-border)] text-[var(--sf-text-muted)] font-medium hover:bg-[var(--sf-card-hover)] hover:text-[var(--sf-text)] transition-colors disabled:opacity-60"
+                className="px-4 py-2.5 rounded-lg border border-[var(--sf-border)] text-[var(--sf-text-muted)] font-medium hover:bg-[var(--sf-card-hover)] hover:text-[var(--sf-text)] transition-colors disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer"
               >
                 Annuler
               </button>
@@ -637,7 +758,7 @@ CTA: ${s.cta || ''}`;
                   type="button"
                   onClick={handleQuickEditSave}
                   disabled={quickEditSaving}
-                  className="px-5 py-2.5 rounded-lg bg-[#2563eb] text-white font-medium hover:bg-blue-600 disabled:opacity-60 transition-colors"
+                  className="px-5 py-2.5 rounded-lg bg-[#2563eb] text-white font-medium hover:bg-blue-600 disabled:opacity-60 disabled:cursor-not-allowed transition-colors cursor-pointer"
                 >
                   {quickEditSaving ? 'Enregistrement…' : 'Enregistrer'}
                 </button>
@@ -645,8 +766,8 @@ CTA: ${s.cta || ''}`;
                   type="button"
                   onClick={handleQuickEditPublish}
                   disabled={quickEditSaving}
-                  className="px-5 py-2.5 rounded-lg bg-[var(--sf-cta)] font-medium hover:opacity-90 disabled:opacity-60 transition-colors"
-                style={{ color: 'var(--sf-cta-text)' }}
+                  className="px-5 py-2.5 rounded-lg bg-[var(--sf-cta)] font-medium hover:opacity-90 disabled:opacity-60 disabled:cursor-not-allowed transition-colors cursor-pointer"
+                  style={{ color: 'var(--sf-cta-text)' }}
                 >
                   Mettre en ligne
                 </button>
@@ -688,7 +809,7 @@ CTA: ${s.cta || ''}`;
                   type="button"
                   onClick={() => !savingPromptModal && setSaasPromptModalOpen(false)}
                   disabled={savingPromptModal}
-                  className="px-4 py-2.5 rounded-lg border font-medium transition-colors disabled:opacity-60 border-[var(--sf-border)] hover:bg-[var(--sf-card-hover)] hover:text-[var(--sf-text)]"
+                  className="px-4 py-2.5 rounded-lg border font-medium transition-colors disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer border-[var(--sf-border)] hover:bg-[var(--sf-card-hover)] hover:text-[var(--sf-text)]"
                   style={{ color: 'var(--sf-text-muted)' }}
                 >
                   Annuler
@@ -697,8 +818,8 @@ CTA: ${s.cta || ''}`;
                   type="button"
                   onClick={handleSavePromptModal}
                   disabled={savingPromptModal}
-                  className="px-5 py-2.5 rounded-lg bg-[var(--sf-cta)] font-medium hover:opacity-90 disabled:opacity-60 transition-colors"
-                style={{ color: 'var(--sf-cta-text)' }}
+                  className="px-5 py-2.5 rounded-lg bg-[var(--sf-cta)] font-medium hover:opacity-90 disabled:opacity-60 disabled:cursor-not-allowed transition-colors cursor-pointer"
+                  style={{ color: 'var(--sf-cta-text)' }}
                 >
                   {savingPromptModal ? 'Enregistrement…' : 'Enregistrer'}
                 </button>
@@ -766,8 +887,8 @@ CTA: ${s.cta || ''}`;
                 key={f.id}
                 type="button"
                 onClick={() => setFilter(f.id)}
-                className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
-                  filter === f.id ? 'bg-[var(--sf-cta)] text-[var(--sf-cta-text)]' : 'bg-[var(--sf-border)] text-[var(--sf-text-muted)] hover:text-[var(--sf-text)]'
+                className={`px-4 py-2 rounded-full text-sm font-medium transition-all cursor-pointer ${
+                  filter === f.id ? 'bg-[var(--sf-cta)] text-[var(--sf-cta-text)]' : 'bg-[var(--sf-border)] text-[var(--sf-text-muted)] hover:text-[var(--sf-text)] hover:bg-[var(--sf-border-light)]'
                 }`}
               >
                 {f.label}
@@ -794,7 +915,7 @@ CTA: ${s.cta || ''}`;
               <p className="text-sm text-[var(--sf-text-dim)]">Mets des scripts en ligne depuis les propositions</p>
             </div>
           ) : (
-            <div className="space-y-2">
+            <div className="space-y-4">
               {filteredPublished.map((s) => (
                 <div
                   key={s.id}
@@ -810,8 +931,8 @@ CTA: ${s.cta || ''}`;
                     <div className="text-sm text-[var(--sf-text)] line-clamp-3">{truncateLines(s.demo)}</div>
                     <div className="text-sm text-[var(--sf-text)] line-clamp-3">{truncateLines(s.cta)}</div>
                   </div>
-                  <div className="flex items-center px-4 py-3 border-t border-[var(--sf-border)] bg-[var(--sf-card-hover)]">
-                    <span className="text-xs text-[var(--sf-text-dim)] shrink-0">ID {s.id}</span>
+                  <div className="flex items-center px-4 py-0 border-t border-[var(--sf-border)] bg-[var(--sf-card-hover)]">
+                    <span className="text-xs text-[var(--sf-text-dim)] shrink-0">ID {toDisplayId(s.id)}</span>
                     <span className="text-xs text-[var(--sf-text-dim)] flex-1 text-center">
                       Mis en ligne le {formatDate(s.published_at)}
                     </span>

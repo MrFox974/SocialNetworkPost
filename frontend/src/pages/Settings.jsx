@@ -206,11 +206,10 @@ export default function Settings() {
           <button
             type="submit"
             disabled={profileLoading}
-            className="sf-cta-button px-6 py-2"
+            className="sf-cta-button px-6 py-2 rounded-lg transition-colors hover:opacity-90 disabled:opacity-70 disabled:cursor-not-allowed"
             style={{
               backgroundColor: 'var(--sf-cta)',
               color: 'var(--sf-cta-text)',
-              opacity: profileLoading ? 0.7 : 1,
             }}
           >
             {profileLoading ? 'Enregistrement…' : 'Enregistrer'}
@@ -238,7 +237,7 @@ export default function Settings() {
               type="button"
               onClick={handleUnsubscribe}
               disabled={unsubscribeLoading}
-              className="text-sm font-medium px-4 py-2 rounded-lg border transition-colors hover:opacity-90"
+              className="text-sm font-medium px-4 py-2 rounded-lg border transition-colors hover:bg-[var(--sf-card-hover)] hover:border-[var(--sf-border-light)] disabled:opacity-70 disabled:cursor-not-allowed"
               style={{ borderColor: 'var(--sf-border)', color: 'var(--sf-text-muted)' }}
             >
               {unsubscribeLoading ? 'En cours…' : 'Se désabonner (fin de période)'}
@@ -261,7 +260,7 @@ export default function Settings() {
         <button
           type="button"
           onClick={() => setShowDeleteModal(true)}
-          className="text-sm font-medium px-4 py-2 rounded-lg border transition-colors"
+          className="text-sm font-medium px-4 py-2 rounded-lg border transition-colors hover:bg-red-500/10 hover:border-red-500/50 hover:text-red-400"
           style={{ borderColor: 'var(--sf-border)', color: 'var(--sf-text-muted)' }}
         >
           Supprimer mon compte
@@ -302,7 +301,7 @@ export default function Settings() {
               <button
                 type="button"
                 onClick={() => { setShowDeleteModal(false); setDeleteConfirm(''); }}
-                className="px-4 py-2 rounded-lg border text-sm font-medium"
+                className="px-4 py-2 rounded-lg border text-sm font-medium transition-colors hover:bg-[var(--sf-card-hover)] disabled:cursor-not-allowed"
                 style={{ borderColor: 'var(--sf-border)', color: 'var(--sf-text-muted)' }}
               >
                 Annuler
@@ -311,11 +310,10 @@ export default function Settings() {
                 type="button"
                 onClick={handleDeleteAccount}
                 disabled={deleteConfirm !== 'SUPPRIMER' || deleteLoading}
-                className="px-4 py-2 rounded-lg text-sm font-medium"
+                className="px-4 py-2 rounded-lg text-sm font-medium transition-colors hover:opacity-90 disabled:opacity-70 disabled:cursor-not-allowed"
                 style={{
-                  backgroundColor: deleteConfirm !== 'SUPPRIMER' ? 'var(--sf-border)' : 'var(--sf-cta)',
-                  color: deleteConfirm !== 'SUPPRIMER' ? 'var(--sf-text-muted)' : 'var(--sf-cta-text)',
-                  opacity: deleteLoading ? 0.7 : 1,
+                  backgroundColor: deleteConfirm !== 'SUPPRIMER' ? 'var(--sf-border)' : 'var(--sf-danger)',
+                  color: deleteConfirm !== 'SUPPRIMER' ? 'var(--sf-text-muted)' : 'white',
                 }}
               >
                 {deleteLoading ? 'Suppression…' : 'Supprimer définitivement'}

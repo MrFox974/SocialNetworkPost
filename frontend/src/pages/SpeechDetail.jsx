@@ -1,6 +1,8 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useParams, useNavigate, useLocation, Link } from 'react-router-dom';
 import api from '../../utils/api';
+
+const BODY_SCROLLBAR_CLASS = 'sf-page-hide-scrollbar';
 import { generatePlatforms, regenerate } from '../utils/speechApi';
 import { useToast } from '../contexts/ToastContext';
 import CopyIcon from '../components/CopyIcon';
@@ -63,6 +65,11 @@ export default function SpeechDetail() {
   const [scoreUpdating, setScoreUpdating] = useState(false);
   const [ctaPlatform, setCtaPlatform] = useState(null);
   const saveTimeoutRef = useRef(null);
+
+  useEffect(() => {
+    document.documentElement.classList.add(BODY_SCROLLBAR_CLASS);
+    return () => document.documentElement.classList.remove(BODY_SCROLLBAR_CLASS);
+  }, []);
 
   /** Données plateformes déjà présentes en BDD — si false, on affiche les indications (pas de génération auto). */
   const hasPlatformData = speech && !loading && (() => {

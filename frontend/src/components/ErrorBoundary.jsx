@@ -99,7 +99,7 @@ function ErrorBoundary() {
         )}
         <Link
           to="/dashboard"
-          className="sf-cta-button inline-flex items-center justify-center mt-6 bg-[var(--sf-cta)] hover:opacity-90"
+          className="sf-cta-button inline-flex items-center justify-center mt-6 bg-[var(--sf-cta)] hover:opacity-90 cursor-pointer rounded-lg px-6 py-3 transition-colors"
           style={{ color: 'var(--sf-cta-text)' }}
         >
           Retour au tableau de bord

@@ -73,7 +73,7 @@ export default function DashboardProjects() {
           type="button"
           disabled={creating}
           onClick={handleNewProject}
-          className="sf-cta-button flex items-center justify-center gap-2 shrink-0 w-full sm:w-auto bg-[var(--sf-cta)] hover:opacity-90 disabled:opacity-60"
+          className="sf-cta-button flex items-center justify-center gap-2 shrink-0 w-full sm:w-auto bg-[var(--sf-cta)] hover:opacity-90 disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer rounded-lg transition-colors"
           style={{ color: 'var(--sf-cta-text)' }}
         >
           {creating ? (
@@ -104,7 +104,7 @@ export default function DashboardProjects() {
             type="button"
             onClick={handleNewProject}
             disabled={creating}
-            className="sf-cta-button bg-[var(--sf-cta)] hover:opacity-90 disabled:opacity-60"
+            className="sf-cta-button bg-[var(--sf-cta)] hover:opacity-90 disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer rounded-lg transition-colors"
             style={{ color: 'var(--sf-cta-text)' }}
           >
             Créer un projet
@@ -133,7 +133,7 @@ export default function DashboardProjects() {
                     e.stopPropagation();
                     setDeleteModal(p);
                   }}
-                  className="shrink-0 w-8 h-8 flex items-center justify-center rounded-lg opacity-0 group-hover:opacity-100 transition-all"
+                  className="shrink-0 w-8 h-8 flex items-center justify-center rounded-lg opacity-0 group-hover:opacity-100 transition-all hover:bg-red-500/20 hover:text-red-400 cursor-pointer"
                   style={{ color: 'var(--sf-text-dim)' }}
                   aria-label="Supprimer"
                 >
@@ -170,7 +170,7 @@ export default function DashboardProjects() {
                 type="button"
                 onClick={() => setDeleteModal(null)}
                 disabled={deleting}
-                className="px-4 py-2.5 rounded-lg border font-medium transition-colors border-[var(--sf-border)] hover:bg-[var(--sf-border)]"
+                className="px-4 py-2.5 rounded-lg border font-medium transition-colors border-[var(--sf-border)] hover:bg-[var(--sf-card-hover)] disabled:cursor-not-allowed cursor-pointer"
                 style={{ color: 'var(--sf-text-muted)' }}
               >
                 Annuler
@@ -179,7 +179,7 @@ export default function DashboardProjects() {
                 type="button"
                 onClick={handleDelete}
                 disabled={deleting}
-                className="px-4 py-2.5 rounded-lg font-medium bg-[var(--sf-danger)] text-white hover:opacity-90 disabled:opacity-60 transition-colors"
+                className="px-4 py-2.5 rounded-lg font-medium bg-[var(--sf-danger)] text-white hover:opacity-90 disabled:opacity-60 disabled:cursor-not-allowed transition-colors cursor-pointer"
               >
                 {deleting ? 'Suppression…' : 'Supprimer'}
               </button>

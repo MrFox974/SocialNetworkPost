@@ -4,6 +4,7 @@ import api from '../../utils/api';
 import { generateProposals } from '../utils/speechApi';
 import { useToast } from '../contexts/ToastContext';
 import SpeechCardSkeleton from '../components/SpeechCardSkeleton';
+import { toDisplayId } from '../utils/format';
 
 const MAX_DRAFTS = 50;
 
@@ -135,12 +136,46 @@ export default function Dashboard() {
     }
   };
 
+  const handleAddToSelection = async (id) => {
+    try {
+      await api.put(`/api/speeches/${id}`, { in_selection: true });
+      setProposals((prev) => prev.map((s) => (s.id === id ? { ...s, in_selection: true } : s)));
+      setSelected((prev) => {
+        if (prev.some((s) => s.id === id)) return prev;
+        const item = proposals.find((s) => s.id === id);
+        return item ? [...prev, { ...item, in_selection: true }] : prev;
+      });
+      addToast('Ajouté à la sélection', 'success');
+    } catch (err) {
+      addToast(`Erreur : ${err.response?.data?.error || err.message}`, 'error');
+    }
+  };
+
   const handleRemoveFromSelection = async (id) => {
     try {
       await api.put(`/api/speeches/${id}`, { in_selection: false });
       setSelected((prev) => prev.filter((s) => s.id !== id));
       setProposals((prev) => prev.map((s) => (s.id === id ? { ...s, in_selection: false } : s)));
       addToast('Retiré de la sélection', 'info');
+    } catch (err) {
+      addToast(`Erreur : ${err.response?.data?.error || err.message}`, 'error');
+    }
+  };
+
+  const handlePublishFromSelection = async (id) => {
+    try {
+      const publishedAt = new Date().toISOString();
+      await api.put(`/api/speeches/${id}`, {
+        status: 'published',
+        published_at: publishedAt,
+        in_selection: false,
+      });
+      const source = [...proposals, ...selected].find((s) => s.id === id);
+      const updated = source ? { ...source, status: 'published', published_at: publishedAt, in_selection: false } : null;
+      setSelected((prev) => prev.filter((s) => s.id !== id));
+      setProposals((prev) => prev.filter((s) => s.id !== id));
+      if (updated) setPublished((prev) => [updated, ...prev.filter((s) => s.id !== id)]);
+      addToast('Script mis en ligne ✓', 'success');
     } catch (err) {
       addToast(`Erreur : ${err.response?.data?.error || err.message}`, 'error');
     }
@@ -366,7 +401,7 @@ export default function Dashboard() {
               <p className="text-sm text-[#64748b]">Clique sur Générer 7 scripts pour commencer</p>
             </div>
           ) : (
-            <div className="space-y-2">
+            <div className="space-y-4">
               {generating && (
                 <>
                   {[1, 2, 3, 4, 5, 6, 7].map((i) => (
@@ -396,9 +431,20 @@ export default function Dashboard() {
                     <div className="text-sm text-[#f1f5f9] line-clamp-3">{truncateLines(s.demo)}</div>
                     <div className="text-sm text-[#f1f5f9] line-clamp-3">{truncateLines(s.cta)}</div>
                   </div>
-                  <div className="flex items-center justify-between px-4 py-3 border-t border-[#2a2d37] bg-[#1a1d27]/80">
-                    <span className="text-xs text-[#64748b]">ID {s.id}</span>
+                  <div className="flex items-center justify-between px-4 py-0 border-t border-[#2a2d37] bg-[#1a1d27]/80">
+                    <span className="text-xs text-[#64748b]">ID {toDisplayId(s.id)}</span>
                     <div className="flex items-center gap-1">
+                      <button
+                        type="button"
+                        data-action
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleAddToSelection(s.id);
+                        }}
+                        className="px-2.5 py-1.5 rounded text-xs font-medium border transition-colors duration-200 cursor-pointer text-[var(--sf-accent)] border-[var(--sf-accent)]/50 hover:bg-[var(--sf-accent)]/15"
+                      >
+                        Sélectionner
+                      </button>
                       <button
                         type="button"
                         data-action
@@ -406,9 +452,13 @@ export default function Dashboard() {
                           e.stopPropagation();
                           navigate(`/dashboard/speech/${s.id}`);
                         }}
-                        className="px-2.5 py-1.5 rounded text-xs font-medium text-[#94a3b8] hover:text-white hover:bg-[#2a2d37] transition-colors duration-200"
+                        className="w-8 h-8 flex items-center justify-center rounded text-[#64748b] hover:text-[#2563eb] hover:bg-[#2a2d37] transition-colors duration-200"
+                        title="Ouvrir l'interface complète (édition)"
                       >
-                        Édition
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z" />
+                          <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1Z" />
+                        </svg>
                       </button>
                       <button
                         type="button"
@@ -457,7 +507,7 @@ export default function Dashboard() {
               <p className="text-sm text-[#64748b]">Depuis Propositions, ouvre une proposition et clique sur « Mettre en sélection »</p>
             </div>
           ) : (
-            <div className="space-y-2">
+            <div className="space-y-4">
               {selected.map((s) => (
                 <div
                   key={s.id}
@@ -478,33 +528,44 @@ export default function Dashboard() {
                     <div className="text-sm text-[#f1f5f9] line-clamp-3">{truncateLines(s.demo)}</div>
                     <div className="text-sm text-[#f1f5f9] line-clamp-3">{truncateLines(s.cta)}</div>
                   </div>
-                  <div className="flex items-center justify-between px-4 py-3 border-t border-[#2a2d37] bg-[#1a1d27]/80">
-                    <span className="text-xs text-[#64748b]">ID {s.id}</span>
+                  <div className="flex items-center justify-between px-4 py-0 border-t border-[#2a2d37] bg-[#1a1d27]/80">
+                    <span className="text-xs text-[#64748b]">ID {toDisplayId(s.id)}</span>
                     <div className="flex items-center gap-1">
-                    <button
-                      type="button"
-                      data-action
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        navigate(`/dashboard/speech/${s.id}`, { state: { returnTab: 'selection' } });
-                      }}
-                      className="w-8 h-8 flex items-center justify-center rounded text-[#64748b] hover:text-[#2563eb] hover:bg-[#2a2d37] transition-colors duration-200"
-                      title="Ouvrir l’interface complète (cartés réseaux et édition)"
-                    >
-                      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z" />
-                        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1Z" />
-                      </svg>
-                    </button>
-                    <button
-                      type="button"
-                      data-action
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setSelectionActionItem(s);
-                      }}
-                      className="w-8 h-8 flex items-center justify-center rounded text-[#64748b] hover:text-[#dc2626] hover:bg-[#2a2d37] transition-colors duration-200"
-                      title="Options"
+                      <button
+                        type="button"
+                        data-action
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handlePublishFromSelection(s.id);
+                        }}
+                        className="px-2.5 py-1.5 rounded text-xs font-medium border transition-colors duration-200 cursor-pointer text-blue-400 border-blue-500/50 hover:bg-blue-500/20"
+                      >
+                        Mettre en ligne
+                      </button>
+                      <button
+                        type="button"
+                        data-action
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          navigate(`/dashboard/speech/${s.id}`, { state: { returnTab: 'selection' } });
+                        }}
+                        className="w-8 h-8 flex items-center justify-center rounded text-[#64748b] hover:text-[#2563eb] hover:bg-[#2a2d37] transition-colors duration-200"
+                        title="Ouvrir l'interface complète (cartés réseaux et édition)"
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z" />
+                          <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1Z" />
+                        </svg>
+                      </button>
+                      <button
+                        type="button"
+                        data-action
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setSelectionActionItem(s);
+                        }}
+                        className="w-8 h-8 flex items-center justify-center rounded text-[#64748b] hover:text-[#dc2626] hover:bg-[#2a2d37] transition-colors duration-200"
+                        title="Options"
                       >
                         ×
                       </button>
@@ -580,7 +641,7 @@ export default function Dashboard() {
                 type="button"
                 onClick={() => !quickEditSaving && setQuickEditItem(null)}
                 disabled={quickEditSaving}
-                className="px-4 py-2.5 rounded-lg border border-[#2a2d37] text-[#94a3b8] font-medium hover:bg-[#2a2d37] hover:text-white transition-colors disabled:opacity-60"
+                className="px-4 py-2.5 rounded-lg border border-[#2a2d37] text-[#94a3b8] font-medium hover:bg-[#2a2d37] hover:text-white transition-colors disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer"
               >
                 Annuler
               </button>
@@ -589,7 +650,7 @@ export default function Dashboard() {
                   type="button"
                   onClick={handleQuickEditSave}
                   disabled={quickEditSaving}
-                  className="px-5 py-2.5 rounded-lg bg-[#2563eb] text-white font-medium hover:bg-blue-600 disabled:opacity-60 transition-colors"
+                  className="px-5 py-2.5 rounded-lg bg-[#2563eb] text-white font-medium hover:bg-blue-600 disabled:opacity-60 disabled:cursor-not-allowed transition-colors cursor-pointer"
                 >
                   {quickEditSaving ? 'Enregistrement…' : 'Enregistrer'}
                 </button>
@@ -597,8 +658,8 @@ export default function Dashboard() {
                   type="button"
                   onClick={handleQuickEditPublish}
                   disabled={quickEditSaving}
-                  className="px-5 py-2.5 rounded-lg font-medium hover:opacity-90 disabled:opacity-60 transition-colors bg-[var(--sf-cta)]"
-            style={{ color: 'var(--sf-cta-text)' }}
+                  className="px-5 py-2.5 rounded-lg font-medium hover:opacity-90 disabled:opacity-60 disabled:cursor-not-allowed transition-colors bg-[var(--sf-cta)] cursor-pointer"
+                  style={{ color: 'var(--sf-cta-text)' }}
                 >
                   Mettre en ligne
                 </button>
@@ -667,8 +728,8 @@ export default function Dashboard() {
                 key={f.id}
                 type="button"
                 onClick={() => setFilter(f.id)}
-                className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 ${
-                  filter === f.id ? 'bg-[#2563eb] text-white' : 'bg-[#2a2d37] text-[#94a3b8] hover:text-white'
+                className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 cursor-pointer ${
+                  filter === f.id ? 'bg-[#2563eb] text-white' : 'bg-[#2a2d37] text-[#94a3b8] hover:text-white hover:bg-[#353a4a]'
                 }`}
               >
                 {f.label}
@@ -719,7 +780,7 @@ export default function Dashboard() {
                     <div className="text-sm text-[#f1f5f9] line-clamp-3">{truncateLines(s.cta)}</div>
                   </div>
                   <div className="flex items-center px-4 py-3 border-t border-[#2a2d37] bg-[#1a1d27]/80">
-                    <span className="text-xs text-[#64748b] shrink-0">ID {s.id}</span>
+                    <span className="text-xs text-[#64748b] shrink-0">ID {toDisplayId(s.id)}</span>
                     <span className="text-xs text-[#64748b] flex-1 text-center">
                       Mis en ligne le {formatDate(s.published_at)}
                     </span>

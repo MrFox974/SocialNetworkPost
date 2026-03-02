@@ -184,7 +184,7 @@ export default function Plans() {
                     <button
                       type="button"
                       onClick={handleStartFree}
-                      className="w-full sf-cta-button"
+                      className="w-full sf-cta-button rounded-lg transition-colors hover:opacity-90 cursor-pointer"
                       style={{
                         backgroundColor: 'var(--sf-card-hover)',
                         color: 'var(--sf-text)',
@@ -197,11 +197,10 @@ export default function Plans() {
                       type="button"
                       disabled={checkoutLoading === plan.id}
                       onClick={() => handleCheckout(plan.id)}
-                      className="w-full sf-cta-button flex items-center justify-center gap-2"
+                      className="w-full sf-cta-button flex items-center justify-center gap-2 rounded-lg transition-colors hover:opacity-90 disabled:opacity-70 disabled:cursor-not-allowed cursor-pointer"
                       style={{
                         backgroundColor: 'var(--sf-cta)',
                         color: 'var(--sf-cta-text)',
-                        opacity: checkoutLoading === plan.id ? 0.7 : 1,
                       }}
                     >
                       {checkoutLoading === plan.id ? 'Redirection vers Stripe…' : 'Choisir ce plan'}

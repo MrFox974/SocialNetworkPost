@@ -47,7 +47,7 @@ export default function DashboardLayout() {
               <button
                 type="button"
                 onClick={() => setMenuOpen((o) => !o)}
-                className="flex items-center gap-1.5 text-sm font-medium transition-colors hover:opacity-80"
+                className="flex items-center gap-1.5 text-sm font-medium transition-colors hover:opacity-80 cursor-pointer"
                 style={{ color: 'var(--sf-text-muted)' }}
                 aria-expanded={menuOpen}
                 aria-haspopup="true"
@@ -65,7 +65,7 @@ export default function DashboardLayout() {
                     to="/dashboard/settings"
                     role="menuitem"
                     onClick={() => setMenuOpen(false)}
-                    className="block px-4 py-2 text-sm text-left transition-colors hover:opacity-90"
+                    className="block px-4 py-2 text-sm text-left transition-colors hover:opacity-90 hover:bg-[var(--sf-card-hover)] rounded cursor-pointer"
                     style={{ color: 'var(--sf-text)' }}
                   >
                     Paramètres
@@ -74,7 +74,7 @@ export default function DashboardLayout() {
                     type="button"
                     role="menuitem"
                     onClick={handleLogout}
-                    className="block w-full text-left px-4 py-2 text-sm transition-colors hover:opacity-90"
+                    className="block w-full text-left px-4 py-2 text-sm transition-colors hover:opacity-90 hover:bg-[var(--sf-card-hover)] rounded cursor-pointer"
                     style={{ color: 'var(--sf-text-muted)' }}
                   >
                     Déconnexion
