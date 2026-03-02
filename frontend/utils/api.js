@@ -1,105 +1,105 @@
 import axios from 'axios';
 
-// Construction de l'URL avec valeurs par défaut si les variables d'env ne sont pas définies
 const protocol = import.meta.env.VITE_PROTOCOLE || 'http';
-// Nettoie le host : enlève les slashes finaux et les espaces
 const host = (import.meta.env.VITE_SERVER_HOST || 'localhost').replace(/\/+$/, '').trim();
-// En prod (Lambda Function URL), VITE_SERVER_PORT n'est pas défini → pas de port dans l'URL
-// En local, VITE_SERVER_PORT=8080 → on ajoute le port
-const port = import.meta.env.VITE_SERVER_PORT;
+const portRaw = import.meta.env.VITE_SERVER_PORT;
+const port = portRaw !== undefined && portRaw !== '' ? String(portRaw).trim() : (host === 'localhost' ? '8080' : '');
 
 let baseURL;
-
-if (!port || port === '' || port === '443' || port === '80') {
-  // Pas de port si non défini ou port par défaut (80/443)
+if (!port || port === '443' || port === '80') {
   baseURL = `${protocol}://${host}`;
 } else {
-  // Port défini et différent de 80/443 → on l'ajoute
   baseURL = `${protocol}://${host}:${port}`;
 }
 
-console.log('API Base URL:', baseURL);
-console.log('Variables d\'environnement:', {
-  VITE_PROTOCOLE: import.meta.env.VITE_PROTOCOLE,
-  VITE_SERVER_HOST: import.meta.env.VITE_SERVER_HOST,
-  VITE_SERVER_PORT: import.meta.env.VITE_SERVER_PORT
-});
-
 const api = axios.create({
-  baseURL: baseURL,
-  withCredentials: true
+  baseURL,
+  withCredentials: true,
 });
 
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-// INTERCEPTOR REQUEST 
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━<━━━━━━
+const ACCESS_TOKEN_KEY = 'accessToken';
+const REFRESH_TOKEN_KEY = 'refreshToken';
+const TOKEN_KEY = 'token';
+
+function getAccessToken() {
+  return localStorage.getItem(ACCESS_TOKEN_KEY) || localStorage.getItem(TOKEN_KEY);
+}
+
+function getRefreshToken() {
+  return localStorage.getItem(REFRESH_TOKEN_KEY);
+}
+
+function clearAuth() {
+  localStorage.removeItem(ACCESS_TOKEN_KEY);
+  localStorage.removeItem(REFRESH_TOKEN_KEY);
+  localStorage.removeItem(TOKEN_KEY);
+  localStorage.removeItem('user');
+}
 
 api.interceptors.request.use((config) => {
-  const token = localStorage.getItem('accessToken');
+  const token = getAccessToken();
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
-
   return config;
 });
 
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-// INTERCEPTOR RESPONSE
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+const authPaths = ['/api/auth/login', '/api/auth/register', '/api/auth/google', '/api/auth/refresh'];
+function isAuthRequest(config) {
+  const url = config?.url || '';
+  return authPaths.some((path) => url.includes(path));
+}
 
 api.interceptors.response.use(
-  (response) => response, // ✅ OK → retourne directement
-  async (error) => {      // ❌ Erreur → traite
-        
-    // Y a pas d'erreur? Rejette et bye
-    if (!error.response) {
+  (response) => response,
+  async (error) => {
+    const originalRequest = error.config;
+    if (error.response?.status !== 401) {
       return Promise.reject(error);
     }
-
-    const { status } = error.response;
-    const { config } = error;
-
-    // C'est pas un 401? Rejette et bye
-    if (status !== 401) {
+    if (isAuthRequest(originalRequest)) {
+      clearAuth();
+      if (typeof window !== 'undefined') {
+        window.location.href = '/login';
+      }
       return Promise.reject(error);
     }
-
-    // On a déjà essayé de refresh? Rejette et bye (évite boucle infinie)
-    if (config._retry) {
+    if (originalRequest._retry) {
+      clearAuth();
+      if (typeof window !== 'undefined') {
+        window.location.href = '/login';
+      }
       return Promise.reject(error);
     }
-
-    // OK, on va tenter un refresh
-    config._retry = true;
-
+    const refreshToken = getRefreshToken();
+    if (!refreshToken) {
+      clearAuth();
+      if (typeof window !== 'undefined') {
+        window.location.href = '/login';
+      }
+      return Promise.reject(error);
+    }
+    originalRequest._retry = true;
     try {
-      // Appelle le serveur pour un nouveau token
-      const refreshURL = `${baseURL}/refresh`;
-      const response = await axios.post(
-        refreshURL,
-        {},
-        { withCredentials: true }
-      );
-
-      // Récupère le nouveau token
-      const { accessToken } = response.data;
-
-      // Le sauvegarde
-      localStorage.setItem('accessToken', accessToken);
-
-      // Le met dans le header de la requête échouée
-      config.headers.Authorization = `Bearer ${accessToken}`;
-
-      // La renvoie avec le nouveau token
-      return api(config);
-      
+      const { data } = await axios.post(`${baseURL}/api/auth/refresh`, { refreshToken });
+      if (data.accessToken) {
+        localStorage.setItem(ACCESS_TOKEN_KEY, data.accessToken);
+        if (data.refreshToken) {
+          localStorage.setItem(REFRESH_TOKEN_KEY, data.refreshToken);
+        }
+        originalRequest.headers.Authorization = `Bearer ${data.accessToken}`;
+        return api(originalRequest);
+      }
     } catch (refreshError) {
-      // Le refresh a échoué = on est vraiment déconnecté
-      localStorage.removeItem('accessToken');
-      window.location.href = '/connection';
-      return Promise.reject(refreshError);
+      // ignore
     }
+    clearAuth();
+    if (typeof window !== 'undefined') {
+      window.location.href = '/login';
+    }
+    return Promise.reject(error);
   }
 );
 
 export default api;
+export { ACCESS_TOKEN_KEY, REFRESH_TOKEN_KEY, TOKEN_KEY, getAccessToken, getRefreshToken, clearAuth };

@@ -1,22 +1,24 @@
 import { RouterProvider } from 'react-router-dom';
 import { Suspense } from 'react';
 import { router } from './router';
+import { ToastProvider } from './contexts/ToastContext';
+import { AuthProvider } from './contexts/AuthContext';
 
 function App() {
   return (
-    <Suspense 
-      fallback={
-        <div className="min-h-screen flex items-center justify-center">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-            <p className="text-gray-600">Chargement...</p>
+    <ToastProvider>
+      <AuthProvider>
+        <Suspense
+        fallback={
+          <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: 'var(--sf-bg)' }}>
+            <div className="animate-spin rounded-full h-10 w-10 border-2 border-t-transparent" style={{ borderColor: 'var(--sf-accent)' }} />
           </div>
-        </div>
-      }
-    >
-      
-      <RouterProvider router={router} />
-    </Suspense>
+        }
+      >
+          <RouterProvider router={router} />
+        </Suspense>
+      </AuthProvider>
+    </ToastProvider>
   );
 }
 

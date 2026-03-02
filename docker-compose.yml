@@ -1,18 +1,26 @@
+# Lancer en local : docker compose up -d
+# Backend : cd backend && npm run dev (connexion à Postgres sur localhost:5432)
+# Frontend : cd frontend && npm run dev
 version: '3.8'
 
 services:
   postgres:
     image: postgres:16-alpine
-    container_name: starter-postgres
+    container_name: social-network-postgres
     restart: unless-stopped
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: starter_db
+      POSTGRES_DB: social-network-db
     ports:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d social-network-db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
 volumes:
   postgres_data:

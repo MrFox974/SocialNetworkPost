@@ -75,41 +75,34 @@ function ErrorBoundary() {
   }
   
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
-      <div className="text-center p-8 bg-white rounded-lg shadow-lg max-w-md">
-        {/* Icône d'erreur */}
-        <div className="text-6xl mb-4">⚠️</div>
-        
-        {/* Code d'erreur (si disponible) */}
+    <div className="min-h-screen flex items-center justify-center p-6" style={{ backgroundColor: 'var(--sf-bg)' }}>
+      <div className="text-center p-8 sm:p-10 rounded-xl shadow-xl max-w-md border border-[var(--sf-border)]" style={{ backgroundColor: 'var(--sf-card)' }}>
+        <p className="sf-section-label">Erreur</p>
+        <div className="text-5xl mb-4">⚠️</div>
         {errorStatus && (
-          <h1 className="text-4xl font-bold text-red-600 mb-2">
+          <h1 className="sf-heading-display mb-2" style={{ color: 'var(--sf-danger)' }}>
             {errorStatus}
           </h1>
         )}
-        
-        {/* Message d'erreur */}
-        <h2 className="text-2xl font-semibold mb-4 text-gray-800">
+        <h2 className="text-xl font-semibold mb-4" style={{ color: 'var(--sf-text)', fontFamily: 'var(--sf-heading-font)' }}>
           {errorMessage}
         </h2>
-        
-        {/* Détails de l'erreur (en développement seulement) */}
         {process.env.NODE_ENV === 'development' && (
           <details className="mt-4 text-left">
-            <summary className="cursor-pointer text-gray-600 mb-2">
+            <summary className="cursor-pointer mb-2" style={{ color: 'var(--sf-text-muted)' }}>
               Détails techniques
             </summary>
-            <pre className="bg-gray-100 p-4 rounded text-xs overflow-auto">
+            <pre className="p-4 rounded-lg text-xs overflow-auto border border-[var(--sf-border)]" style={{ backgroundColor: 'var(--sf-bg-elevated)', color: 'var(--sf-text-dim)' }}>
               {JSON.stringify(error, null, 2)}
             </pre>
           </details>
         )}
-        
-        {/* Bouton pour retourner à l'accueil */}
         <Link
-          to="/home"
-          className="inline-block mt-6 px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+          to="/dashboard"
+          className="sf-cta-button inline-flex items-center justify-center mt-6 bg-[var(--sf-cta)] hover:opacity-90"
+          style={{ color: 'var(--sf-cta-text)' }}
         >
-          Retour à l'accueil
+          Retour au tableau de bord
         </Link>
       </div>
     </div>

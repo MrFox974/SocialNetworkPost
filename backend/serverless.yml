@@ -20,7 +20,21 @@ provider:
     SERVER_HOST: backend-production-2f14.up.railway.app
     JWT_SECRET: 095d69926a23f86c
     JWT_REFRESH_SECRET: 83ez354d8ht4tsgs
-
+    # Auth : false = login simple, true = vérification email + Google
+    PRODUCTION: "false"
+    GOOGLE_CLIENT_ID: ""
+    APPLE_CLIENT_ID: ""
+    SMTP_HOST: "mail.gandi.net"
+    SMTP_PORT: "587"
+    SMTP_USER: ""
+    SMTP_PASS: ""
+    SMTP_FROM: ""
+    FRONTEND_URL: ""
+    TELEGRAM_BOT_TOKEN: ""
+    TELEGRAM_CHAT_ID: ""
+    STRIPE_SECRET_KEY: ""
+    STRIPE_PRODUCT_MAITRISE: ""
+    STRIPE_PRODUCT_PERFORMANCE: ""
 
 functions:
   api:

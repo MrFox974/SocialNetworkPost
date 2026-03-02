@@ -1,18 +1,159 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Syne:wght@400;500;600;700;800&display=swap');
 @import "tailwindcss";
-/* global index.css */ 
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* add the code bellow */ 
+:root {
+  --sf-bg: #191919;
+  --sf-bg-elevated: #222222;
+  --sf-card: #222222;
+  --sf-card-hover: #2a2a2a;
+  --sf-border: #333;
+  --sf-border-light: #404040;
+  --sf-accent: #48f0b7;
+  --sf-accent-hover: #5ff5c3;
+  --sf-cta: #48f0b7;
+  --sf-cta-hover: #5ff5c3;
+  --sf-success: #48f0b7;
+  --sf-danger: #ef4444;
+  --sf-text: #f5f5f5;
+  --sf-text-muted: #a3a3a3;
+  --sf-text-dim: #737373;
+  --sf-section-num: #737373;
+  --sf-heading-font: 'Syne', 'Inter', system-ui, sans-serif;
+  --sf-body-font: 'Inter', system-ui, sans-serif;
+  --sf-section-spacing: clamp(3rem, 8vw, 5rem);
+  --sf-content-width: 72rem;
+  --sf-cta-text: #191919;
+}
+
+body {
+  font-family: var(--sf-body-font);
+  background-color: var(--sf-bg);
+  color: var(--sf-text);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Design system inspiré de la section Contact Benjamin Jochims */
+.sf-section-label {
+  font-family: var(--sf-body-font);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  color: var(--sf-section-num);
+  margin-bottom: 0.5rem;
+}
+
+.sf-heading-display {
+  font-family: var(--sf-heading-font);
+  font-weight: 700;
+  font-size: clamp(2rem, 5vw, 3.25rem);
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+  color: var(--sf-text);
+}
+
+.sf-heading-display-lg {
+  font-family: var(--sf-heading-font);
+  font-weight: 700;
+  font-size: clamp(2.25rem, 6vw, 4rem);
+  line-height: 1.1;
+  letter-spacing: -0.025em;
+  color: var(--sf-text);
+}
+
+.sf-subtitle {
+  font-size: 1rem;
+  color: var(--sf-text-muted);
+  margin-top: 0.75rem;
+}
+
+.sf-subtitle-bracket {
+  font-size: 0.9375rem;
+  color: var(--sf-text-dim);
+  font-style: normal;
+}
+
+.sf-cta-button {
+  font-family: var(--sf-body-font);
+  font-weight: 600;
+  font-size: 1rem;
+  padding: 0.875rem 1.75rem;
+  border-radius: 0.5rem;
+  transition: all 0.2s ease;
+}
+
+.sf-input {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  font-size: 0.9375rem;
+  background: var(--sf-bg-elevated);
+  border: 1px solid var(--sf-border);
+  border-radius: 0.5rem;
+  color: var(--sf-text);
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.sf-input::placeholder {
+  color: var(--sf-text-dim);
+}
+
+.sf-input:focus {
+  outline: none;
+  border-color: var(--sf-accent);
+  box-shadow: 0 0 0 3px rgba(72, 240, 183, 0.2);
+}
+
+.sf-label {
+  display: block;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--sf-text-muted);
+  margin-bottom: 0.375rem;
+}
+
+/* Cache la scrollbar du viewport sur la page projet (évite bugs d'affichage) */
+html.sf-page-hide-scrollbar,
+html.sf-page-hide-scrollbar body {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+html.sf-page-hide-scrollbar::-webkit-scrollbar,
+html.sf-page-hide-scrollbar body::-webkit-scrollbar {
+  display: none;
+}
+
 @layer utilities {
-      /* Hide scrollbar for Chrome, Safari and Opera */
-      .no-scrollbar::-webkit-scrollbar {
-          display: none;
-      }
-     /* Hide scrollbar for IE, Edge and Firefox */
-      .no-scrollbar {
-          -ms-overflow-style: none;  /* IE and Edge */
-          scrollbar-width: none;  /* Firefox */
-    }
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
   }
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .scrollbar-thin::-webkit-scrollbar {
+    width: 6px;
+  }
+  .scrollbar-thin::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    background: rgba(72, 240, 183, 0.35);
+    border-radius: 3px;
+  }
+  .scrollbar-thin::-webkit-scrollbar-thumb:hover {
+    background: rgba(72, 240, 183, 0.5);
+  }
+  .scrollbar-thin {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(72, 240, 183, 0.35) transparent;
+  }
+  .line-clamp-3 {
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+}

@@ -1,36 +1,38 @@
-import { createBrowserRouter, createRoutesFromElements, Route } from 'react-router-dom';
+import { createBrowserRouter, createRoutesFromElements, Route, Navigate } from 'react-router-dom';
 import { lazy, Suspense } from 'react';
-import Layout from './components/Layout';
 import ErrorBoundary from './components/ErrorBoundary';
-import HomeSkeleton from './components/skeletons/HomeSkeleton';
-import AboutSkeleton from './components/skeletons/AboutSkeleton';
-import { homeLoader } from './loaders/home';
-import { aboutLoader } from './loaders/about';
+import ProtectedRoute from './components/ProtectedRoute';
+import DashboardLayout from './components/DashboardLayout';
 
-const Home = lazy(() => import('./pages/home/home'));
-const About = lazy(() => import('./pages/about/about'));
+const Login = lazy(() => import('./pages/Login'));
+const VerifyEmail = lazy(() => import('./pages/VerifyEmail'));
+const DashboardProjects = lazy(() => import('./pages/DashboardProjects'));
+const ProjectPage = lazy(() => import('./pages/ProjectPage'));
+const SpeechDetail = lazy(() => import('./pages/SpeechDetail'));
+const Plans = lazy(() => import('./pages/Plans'));
+const Settings = lazy(() => import('./pages/Settings'));
+
+const Fallback = () => (
+  <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: 'var(--sf-bg)' }}>
+    <div className="animate-spin rounded-full h-10 w-10 border-2 border-t-transparent" style={{ borderColor: 'var(--sf-cta)' }} />
+  </div>
+);
 
 export const router = createBrowserRouter(
   createRoutesFromElements(
-    <Route path="/" element={<Layout />} errorElement={<ErrorBoundary />}>
-      <Route
-        path="home"
-        element={
-          <Suspense fallback={<HomeSkeleton />}>
-            <Home />
-          </Suspense>
-        }
-        loader={homeLoader}
-      />
-      <Route
-        path="about"
-        element={
-          <Suspense fallback={<AboutSkeleton />}>
-            <About />
-          </Suspense>
-        }
-        loader={aboutLoader}
-      />
-    </Route>
+    <>
+      <Route path="/" element={<Navigate to="/dashboard" replace />} />
+      <Route path="/login" element={<Suspense fallback={<Fallback />}><Login /></Suspense>} />
+      <Route path="/verify-email" element={<Suspense fallback={<Fallback />}><VerifyEmail /></Suspense>} />
+      <Route path="/dashboard" element={<ProtectedRoute><DashboardLayout /></ProtectedRoute>} errorElement={<ErrorBoundary />}>
+        <Route index element={<Suspense fallback={<Fallback />}><DashboardProjects /></Suspense>} />
+        <Route path="project/:projectId" element={<Suspense fallback={<Fallback />}><ProjectPage /></Suspense>} />
+        <Route path="speech/:id" element={<Suspense fallback={<Fallback />}><SpeechDetail /></Suspense>} />
+        <Route path="plans" element={<Suspense fallback={<Fallback />}><Plans /></Suspense>} />
+        <Route path="plans/success" element={<Suspense fallback={<Fallback />}><Plans /></Suspense>} />
+        <Route path="settings" element={<Suspense fallback={<Fallback />}><Settings /></Suspense>} />
+      </Route>
+      <Route path="*" element={<Navigate to="/dashboard" replace />} />
+    </>
   )
 );

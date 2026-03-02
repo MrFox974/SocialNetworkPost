@@ -13,7 +13,9 @@ applications:
             - VITE_PROTOCOLE: $VITE_PROTOCOLE
             - VITE_SERVER_HOST: $VITE_SERVER_HOST
             - VITE_SERVER_PORT: $VITE_SERVER_PORT
-      artifacts:
+            - VITE_AUTH_PRODUCTION: $VITE_AUTH_PRODUCTION
+            - VITE_GOOGLE_CLIENT_ID: $VITE_GOOGLE_CLIENT_ID
+      artifacts: 
         baseDirectory: dist
         files:
           - '**/*'

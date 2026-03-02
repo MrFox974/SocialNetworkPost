@@ -34,8 +34,16 @@ app.use(express.urlencoded({ extended: false }));
 // Ne pas toucher à extended: true, ça peut causer des problèmes avec les données de la BDD.
 
 require('./models/Test');
+require('./models/User');
+require('./models/PendingRegistration');
+require('./models/Project');
+require('./models/Speech');
 
-app.use('/api', require('./router/test.route'))
+app.use('/api', require('./router/test.route'));
+app.use('/api/auth', require('./router/auth.route'));
+app.use('/api/projects', require('./router/projects.route'));
+app.use('/api/speeches', require('./router/speeches.route'));
+app.use('/api/payment', require('./router/payment.route'));
 
 // Middleware de gestion d'erreur global
 app.use((err, req, res, next) => {

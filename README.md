@@ -68,16 +68,26 @@ Le projet est **monorepo** : un seul dépôt avec dossiers `frontend/` et `backe
    ```
    → API sur `http://localhost:8080`.
 
-#### Base de données locale (optionnel)
+#### Base de données locale avec Docker
 
-Pour développer sans RDS :
+Pour rester en local avec Docker (recommandé en dev) :
 
 ```bash
-# À la racine du projet
-docker-compose up -d
+# À la racine du projet : lancer Postgres
+docker compose up -d
+
+# Backend (dans un autre terminal)
+cd backend
+cp .env.example .env   # puis éditer si besoin
+npm install && npm run dev
+
+# Frontend
+cd frontend
+npm install && npm run dev
 ```
 
-Postgres écoute sur `localhost:5432` avec `POSTGRES_USER=postgres`, `POSTGRES_DB=starter_db`. Adapter `backend/.env` en conséquence.
+Postgres écoute sur `localhost:5432`. Le fichier `backend/.env.example` est aligné avec `docker-compose.yml` :  
+`DATABASE_NAME=social-network-db`, `DATABASE_USER=postgres`, `DATABASE_PASSWORD=postgres`. Copier `.env.example` en `.env` dans `backend/` pour que la connexion fonctionne.
 
 ### 1.4 Déployer en production (vue d’ensemble)
 
