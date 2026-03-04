@@ -83,9 +83,22 @@ exports.update = async (req, res) => {
       return res.status(404).json({ error: 'Script non trouvé' });
     }
     const allowed = [
-      'status', 'in_selection', 'hook', 'hook_type', 'context', 'demo', 'cta', 'pillar',
-      'tiktok', 'instagram', 'youtube', 'linkedin', 'twitter',
-      'score', 'published_at',
+      'status',
+      'in_selection',
+      'selection_marked',
+      'hook',
+      'hook_type',
+      'context',
+      'demo',
+      'cta',
+      'pillar',
+      'tiktok',
+      'instagram',
+      'youtube',
+      'linkedin',
+      'twitter',
+      'score',
+      'published_at',
     ];
     const updates = {};
     for (const key of allowed) {

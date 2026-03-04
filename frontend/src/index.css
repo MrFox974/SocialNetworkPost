@@ -1,39 +1,66 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Syne:wght@400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap');
 @import "tailwindcss";
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
+/* ——— Thème sombre : fond #191919, cartes légèrement plus claires, texte clair ——— */
 :root {
+  /* Base principale */
   --sf-bg: #191919;
-  --sf-bg-elevated: #222222;
-  --sf-card: #222222;
+  --sf-bg-gradient: #191919;
+  /* Surfaces : légèrement plus claires que le fond */
+  --sf-bg-elevated: #222;
+  --sf-bg-elevated-strong: rgba(34, 34, 34, 0.9);
+  --sf-card: #252525;
   --sf-card-hover: #2a2a2a;
-  --sf-border: #333;
-  --sf-border-light: #404040;
-  --sf-accent: #48f0b7;
-  --sf-accent-hover: #5ff5c3;
-  --sf-cta: #48f0b7;
-  --sf-cta-hover: #5ff5c3;
-  --sf-success: #48f0b7;
+  --sf-card-shadow: 0 18px 42px rgba(0, 0, 0, 0.4);
+  --sf-card-shadow-hover: 0 30px 76px rgba(0, 0, 0, 0.5);
+  --sf-border: rgba(255, 255, 255, 0.12);
+  --sf-border-light: rgba(255, 255, 255, 0.08);
+  /* Accent CTA global (rose #ec4899 pour header / switch / boutons) */
+  --sf-accent: #ec4899;
+  --sf-accent-hover: #db2777;
+  --sf-accent-soft: rgba(236, 72, 153, 0.25);
+  --sf-cta: #ec4899;
+  --sf-cta-hover: #db2777;
+  --sf-success: #115f2e;
   --sf-danger: #ef4444;
-  --sf-text: #f5f5f5;
-  --sf-text-muted: #a3a3a3;
-  --sf-text-dim: #737373;
-  --sf-section-num: #737373;
-  --sf-heading-font: 'Syne', 'Inter', system-ui, sans-serif;
-  --sf-body-font: 'Inter', system-ui, sans-serif;
+  /* Texte : clair sur fond sombre */
+  --sf-text: #fafafa;
+  --sf-text-muted: #a1a1aa;
+  --sf-text-dim: #71717a;
+  --sf-section-num: #ec4899;
+  --sf-surface-alt: #222;
+  --sf-surface-input: #262626;
+  --sf-heading-font: 'Syne', 'Plus Jakarta Sans', system-ui, sans-serif;
+  --sf-body-font: 'Plus Jakarta Sans', system-ui, sans-serif;
   --sf-section-spacing: clamp(3rem, 8vw, 5rem);
   --sf-content-width: 72rem;
-  --sf-cta-text: #191919;
+  --sf-project-content-width: 90rem;
+  --sf-cta-text: #fff;
+}
+
+/* Texture optionnelle : grain très subtil sur fond sombre */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 0;
 }
 
 body {
   font-family: var(--sf-body-font);
+  background: var(--sf-bg-gradient);
   background-color: var(--sf-bg);
   color: var(--sf-text);
   -webkit-font-smoothing: antialiased;
+  min-height: 100vh;
+  position: relative;
+  z-index: 1;
 }
 
 /* Tous les boutons : curseur pointer, disabled = not-allowed */
@@ -47,7 +74,7 @@ button:disabled {
   cursor: pointer;
 }
 
-/* Design system inspiré de la section Contact Benjamin Jochims */
+/* Design system — libellés et titres */
 .sf-section-label {
   font-family: var(--sf-body-font);
   font-size: 0.8125rem;
@@ -88,12 +115,22 @@ button:disabled {
 }
 
 .sf-cta-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   font-family: var(--sf-body-font);
   font-weight: 600;
   font-size: 1rem;
+  line-height: 1.2;
   padding: 0.875rem 1.75rem;
   border-radius: 0.5rem;
+  border: 1px solid transparent;
   transition: all 0.2s ease;
+}
+
+.sf-cta-button:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px var(--sf-accent-soft);
 }
 
 .sf-input {
@@ -105,6 +142,7 @@ button:disabled {
   border-radius: 0.5rem;
   color: var(--sf-text);
   transition: border-color 0.2s, box-shadow 0.2s;
+  backdrop-filter: blur(8px);
 }
 
 .sf-input::placeholder {
@@ -114,7 +152,7 @@ button:disabled {
 .sf-input:focus {
   outline: none;
   border-color: var(--sf-accent);
-  box-shadow: 0 0 0 3px rgba(72, 240, 183, 0.2);
+  box-shadow: 0 0 0 3px var(--sf-accent-soft);
 }
 
 .sf-label {
@@ -125,7 +163,47 @@ button:disabled {
   margin-bottom: 0.375rem;
 }
 
-/* Cache la scrollbar du viewport sur la page projet (évite bugs d'affichage) */
+/* Cartes : fond sombre, bordure discrète */
+.sf-card-style {
+  background: var(--sf-card);
+  border: 1px solid var(--sf-border);
+  box-shadow: var(--sf-card-shadow);
+}
+
+.sf-card-style:hover {
+  background: var(--sf-card-hover);
+  box-shadow: var(--sf-card-shadow-hover);
+}
+
+.sf-marquee-mask {
+  position: relative;
+  overflow: hidden;
+  width: 100%;
+  mask-image: linear-gradient(to right, transparent, black 8%, black 92%, transparent);
+  -webkit-mask-image: linear-gradient(to right, transparent, black 8%, black 92%, transparent);
+}
+
+.sf-marquee-track {
+  display: flex;
+  gap: 1rem;
+  width: max-content;
+  animation: sf-marquee 34s linear infinite;
+}
+
+.sf-marquee-mask:hover .sf-marquee-track {
+  animation-play-state: paused;
+}
+
+@keyframes sf-marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(calc(-50% - 0.5rem));
+  }
+}
+
+/* Cache la scrollbar du viewport sur la page projet */
 html.sf-page-hide-scrollbar,
 html.sf-page-hide-scrollbar body {
   scrollbar-width: none;
@@ -151,15 +229,15 @@ html.sf-page-hide-scrollbar body::-webkit-scrollbar {
     background: transparent;
   }
   .scrollbar-thin::-webkit-scrollbar-thumb {
-    background: rgba(72, 240, 183, 0.35);
+    background: rgba(255, 255, 255, 0.2);
     border-radius: 3px;
   }
   .scrollbar-thin::-webkit-scrollbar-thumb:hover {
-    background: rgba(72, 240, 183, 0.5);
+    background: rgba(255, 255, 255, 0.35);
   }
   .scrollbar-thin {
     scrollbar-width: thin;
-    scrollbar-color: rgba(72, 240, 183, 0.35) transparent;
+    scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
   }
   .line-clamp-3 {
     display: -webkit-box;

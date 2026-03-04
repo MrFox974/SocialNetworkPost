@@ -30,8 +30,8 @@ export default function VerifyEmail() {
   }, [token, saveSession, navigate]);
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-6" style={{ backgroundColor: 'var(--sf-bg)' }}>
-      <div className="w-full max-w-[420px] rounded-xl p-8 shadow-xl border border-[var(--sf-border)]" style={{ backgroundColor: 'var(--sf-card)' }}>
+    <div className="min-h-screen flex items-center justify-center p-6">
+      <div className="w-full max-w-[420px] rounded-xl p-8 shadow-xl sf-card-style">
         <h1 className="text-xl font-semibold" style={{ color: 'var(--sf-cta)' }}>Vérification de l&apos;email</h1>
         {status === 'loading' && (
           <p className="mt-4 flex items-center gap-2">

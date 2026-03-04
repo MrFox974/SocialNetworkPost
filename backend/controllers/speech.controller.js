@@ -15,7 +15,7 @@ function openAIErrorMessage(error) {
 
 /**
  * POST /api/speeches/generate-proposals
- * Body: { existingScriptsSummary?, topScriptsSummary?, selectionScriptsSummary?, saasDescription? }
+ * Body: { existingScriptsSummary?, topScriptsSummary?, selectionScriptsSummary?, saasDescription?, capitalArgumentatif?, argumentativeIntensity? }
  * req.user_id fourni par authMiddlewares (JWT backend)
  */
 exports.generateProposals = async (req, res) => {
@@ -25,12 +25,16 @@ exports.generateProposals = async (req, res) => {
       topScriptsSummary = '',
       selectionScriptsSummary = '',
       saasDescription = '',
+      capitalArgumentatif = '',
+      argumentativeIntensity = 'moyenne',
     } = req.body || {};
     const scripts = await openaiService.generate7Scripts(
       existingScriptsSummary,
       topScriptsSummary,
       selectionScriptsSummary,
-      saasDescription
+      saasDescription,
+      capitalArgumentatif,
+      argumentativeIntensity
     );
     res.json({ scripts });
   } catch (error) {
@@ -38,6 +42,44 @@ exports.generateProposals = async (req, res) => {
     const status = isOpenAIQuotaError(error) ? 503 : 500;
     res.status(status).json({
       error: isOpenAIQuotaError(error) ? openAIErrorMessage(error) : 'Erreur lors de la génération des scripts',
+      details: error.message,
+    });
+  }
+};
+
+/**
+ * POST /api/speeches/generate-one-proposal
+ * Génère un seul script (pour progression réelle côté frontend).
+ * Body: même que generate-proposals + currentBatchSummary (résumé des scripts déjà générés dans ce lot)
+ */
+exports.generateOneProposal = async (req, res) => {
+  try {
+    const {
+      existingScriptsSummary = '',
+      topScriptsSummary = '',
+      selectionScriptsSummary = '',
+      saasDescription = '',
+      capitalArgumentatif = '',
+      argumentativeIntensity = 'moyenne',
+      capitalReferenceMode = 'normal',
+      currentBatchSummary = '',
+    } = req.body || {};
+    const script = await openaiService.generateSingleScript(
+      existingScriptsSummary,
+      topScriptsSummary,
+      selectionScriptsSummary,
+      saasDescription,
+      capitalArgumentatif,
+      argumentativeIntensity,
+      capitalReferenceMode,
+      currentBatchSummary
+    );
+    res.json({ script });
+  } catch (error) {
+    console.error('Erreur generateOneProposal:', error);
+    const status = isOpenAIQuotaError(error) ? 503 : 500;
+    res.status(status).json({
+      error: isOpenAIQuotaError(error) ? openAIErrorMessage(error) : 'Erreur lors de la génération du script',
       details: error.message,
     });
   }

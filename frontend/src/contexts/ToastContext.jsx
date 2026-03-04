@@ -21,15 +21,10 @@ export function ToastProvider({ children }) {
           <div
             key={id}
             role="alert"
-            className={`pointer-events-auto px-4 py-3 rounded-lg shadow-lg text-sm font-medium text-white transition-all duration-200 ${
-              type === 'success'
-                ? 'bg-[#059669]'
-                : type === 'error'
-                  ? 'bg-[#dc2626]'
-                  : type === 'info'
-                    ? 'bg-[#2563eb]'
-                    : 'bg-[#2a2d37]'
-            }`}
+            style={{
+              backgroundColor: type === 'success' ? 'var(--sf-success)' : type === 'error' ? 'var(--sf-danger)' : type === 'info' ? 'var(--sf-cta)' : 'var(--sf-text-muted)',
+            }}
+            className="pointer-events-auto px-4 py-3 rounded-lg shadow-lg text-sm font-medium text-white transition-all duration-200"
           >
             {message}
           </div>

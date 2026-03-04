@@ -10,6 +10,7 @@ route.use(authMiddlewares);
 route.get('/', speechesController.list);
 route.post('/', speechesController.create);
 route.post('/generate-proposals', speechController.generateProposals);
+route.post('/generate-one-proposal', speechController.generateOneProposal);
 route.post('/generate-platforms', speechController.generatePlatforms);
 route.post('/regenerate', speechController.regenerate);
 route.get('/:id', speechesController.getOne);

@@ -4,6 +4,7 @@ import ErrorBoundary from './components/ErrorBoundary';
 import ProtectedRoute from './components/ProtectedRoute';
 import DashboardLayout from './components/DashboardLayout';
 
+const Home = lazy(() => import('./pages/home/home'));
 const Login = lazy(() => import('./pages/Login'));
 const VerifyEmail = lazy(() => import('./pages/VerifyEmail'));
 const DashboardProjects = lazy(() => import('./pages/DashboardProjects'));
@@ -21,7 +22,14 @@ const Fallback = () => (
 export const router = createBrowserRouter(
   createRoutesFromElements(
     <>
-      <Route path="/" element={<Navigate to="/dashboard" replace />} />
+      <Route
+        path="/"
+        element={(
+          <Suspense fallback={<Fallback />}>
+            <Home />
+          </Suspense>
+        )}
+      />
       <Route path="/login" element={<Suspense fallback={<Fallback />}><Login /></Suspense>} />
       <Route path="/verify-email" element={<Suspense fallback={<Fallback />}><VerifyEmail /></Suspense>} />
       <Route path="/dashboard" element={<ProtectedRoute><DashboardLayout /></ProtectedRoute>} errorElement={<ErrorBoundary />}>

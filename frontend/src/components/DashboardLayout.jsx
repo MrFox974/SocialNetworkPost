@@ -1,10 +1,13 @@
 import { useState, useRef, useEffect } from 'react';
-import { Link, useNavigate, Outlet } from 'react-router-dom';
+import { Link, useNavigate, Outlet, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import GenerationProgressBar from './GenerationProgressBar';
 
 export default function DashboardLayout() {
   const navigate = useNavigate();
+  const { pathname } = useLocation();
   const { logout } = useAuth();
+  const isProjectPage = pathname.startsWith('/dashboard/project/');
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef(null);
 
@@ -25,8 +28,8 @@ export default function DashboardLayout() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col" style={{ backgroundColor: 'var(--sf-bg)' }}>
-      <header className="sticky top-0 z-40 border-b border-[var(--sf-border)] bg-[var(--sf-bg)]/90 backdrop-blur-md">
+    <div className="min-h-screen flex flex-col" style={{ background: 'var(--sf-bg-gradient)', backgroundColor: 'var(--sf-bg)' }}>
+      <header className="sticky top-0 z-40 border-b backdrop-blur-md" style={{ borderColor: 'var(--sf-border)', backgroundColor: 'var(--sf-bg-elevated)' }}>
         <div className="mx-auto px-6 sm:px-8 h-16 flex items-center justify-between" style={{ maxWidth: 'var(--sf-content-width)' }}>
           <Link
             to="/dashboard"
@@ -58,7 +61,7 @@ export default function DashboardLayout() {
               {menuOpen && (
                 <div
                   className="absolute right-0 top-full mt-1 py-1 min-w-[160px] rounded-lg border shadow-lg z-50"
-                  style={{ backgroundColor: 'var(--sf-bg)', borderColor: 'var(--sf-border)' }}
+                  style={{ backgroundColor: 'var(--sf-card)', borderColor: 'var(--sf-border)', boxShadow: 'var(--sf-card-shadow-hover)' }}
                   role="menu"
                 >
                   <Link
@@ -85,13 +88,14 @@ export default function DashboardLayout() {
           </nav>
         </div>
       </header>
+      <GenerationProgressBar />
       <main
         className="flex-1 mx-auto px-6 sm:px-8 py-10 sm:py-12"
-        style={{ maxWidth: 'var(--sf-content-width)' }}
+        style={{ maxWidth: isProjectPage ? 'var(--sf-project-content-width)' : 'var(--sf-content-width)' }}
       >
         <Outlet />
       </main>
-      <footer className="mt-auto border-t border-[var(--sf-border)] py-8">
+      <footer className="mt-auto border-t py-8" style={{ borderColor: 'var(--sf-border)' }}>
         <div className="mx-auto px-6 sm:px-8 flex flex-col sm:flex-row items-center justify-between gap-4" style={{ maxWidth: 'var(--sf-content-width)' }}>
           <span className="text-sm" style={{ color: 'var(--sf-text-dim)' }}>
             © {new Date().getFullYear()} SpeechForge

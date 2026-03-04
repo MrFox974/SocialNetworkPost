@@ -10,7 +10,7 @@ applications:
           commands:
             - npm run build
           env:
-            - VITE_PROTOCOLE: $VITE_PROTOCOLE
+            - VITE_PROTOCOLE: https
             - VITE_SERVER_HOST: $VITE_SERVER_HOST
             - VITE_SERVER_PORT: $VITE_SERVER_PORT
             - VITE_AUTH_PRODUCTION: $VITE_AUTH_PRODUCTION

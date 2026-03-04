@@ -31,6 +31,11 @@ const Speech = sequelize.define(
       defaultValue: false,
       allowNull: false,
     },
+    selection_marked: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false,
+      allowNull: false,
+    },
     hook: { type: DataTypes.TEXT, allowNull: false },
     hook_type: { type: DataTypes.STRING(100), allowNull: true },
     context: { type: DataTypes.TEXT, allowNull: false },

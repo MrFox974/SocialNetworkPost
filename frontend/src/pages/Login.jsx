@@ -104,8 +104,8 @@ export default function Login() {
   const productionMode = authConfig.production === true;
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-6" style={{ backgroundColor: 'var(--sf-bg)' }}>
-      <div className="w-full max-w-[420px] rounded-xl p-8 sm:p-10 shadow-xl border border-[var(--sf-border)]" style={{ backgroundColor: 'var(--sf-card)' }}>
+    <div className="min-h-screen flex items-center justify-center p-6">
+      <div className="w-full max-w-[420px] rounded-xl p-8 sm:p-10 shadow-xl sf-card-style">
         <p className="sf-section-label">Connexion</p>
         <h1 className="sf-heading-display mt-1" style={{ fontFamily: 'var(--sf-heading-font)', color: 'var(--sf-cta)' }}>
           SpeechForge

@@ -5,6 +5,7 @@ import api from '../../utils/api';
 const BODY_SCROLLBAR_CLASS = 'sf-page-hide-scrollbar';
 import { generatePlatforms, regenerate } from '../utils/speechApi';
 import { useToast } from '../contexts/ToastContext';
+import { useGenerationProgress } from '../contexts/GenerationProgressContext';
 import CopyIcon from '../components/CopyIcon';
 
 const PLATFORM_LABELS = {
@@ -14,6 +15,13 @@ const PLATFORM_LABELS = {
   linkedin: { name: 'LinkedIn', bestTime: 'Mardi - Jeudi, 7h - 11h', gradient: 'from-[#0A66C2]', border: 'border-[#0A66C2]/60', header: 'bg-[#0A66C2] text-white' },
   twitter: { name: 'X (Twitter)', bestTime: 'Mardi - Jeudi, 9h - 12h ou 17h - 21h', gradient: 'from-black', border: 'border-slate-500/40', header: 'bg-black text-white' },
 };
+
+function normalizeGeneratedText(value) {
+  const s = String(value || '').trim();
+  if (!s) return '';
+  if (s.includes('à compléter')) return '';
+  return s;
+}
 
 /** Indications affichées dans les cartes quand les contenus plateformes n'ont pas encore été générés (sans consommer de crédit IA). */
 const PLATFORM_INDICATIONS = {
@@ -55,9 +63,11 @@ export default function SpeechDetail() {
   const navigate = useNavigate();
   const fromProject = location.state?.fromProject;
   const { addToast } = useToast();
+  const { isGenerating, label, setGenerationProgress } = useGenerationProgress();
   const [speech, setSpeech] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [platformsLoading, setPlatformsLoading] = useState(false);
+  const isPlatformsGenerating = isGenerating && label === `platforms-${id}`;
+  const [platformsLoading, setPlatformsLoading] = useState(isPlatformsGenerating);
   const [regenerating, setRegenerating] = useState(null);
   const [saving, setSaving] = useState(null);
   const [publishModal, setPublishModal] = useState(false);
@@ -94,7 +104,14 @@ export default function SpeechDetail() {
   const fetchSpeech = useCallback(async () => {
     try {
       const { data } = await api.get(`/api/speeches/${id}`);
-      setSpeech(data);
+      const cleaned = {
+        ...data,
+        hook: normalizeGeneratedText(data.hook),
+        context: normalizeGeneratedText(data.context),
+        demo: normalizeGeneratedText(data.demo),
+        cta: normalizeGeneratedText(data.cta),
+      };
+      setSpeech(cleaned);
     } catch (err) {
       addToast(`Erreur : ${err.response?.data?.error || err.message}`, 'error');
       navigate('/dashboard');
@@ -107,12 +124,17 @@ export default function SpeechDetail() {
     fetchSpeech();
   }, [fetchSpeech]);
 
+  useEffect(() => {
+    setPlatformsLoading(isPlatformsGenerating);
+  }, [isPlatformsGenerating]);
+
   const handleGeneratePlatforms = useCallback(async () => {
     if (!speech || !speech.hook || !speech.context) {
       addToast('Complète au moins le hook et le contexte du script avant de générer.', 'error');
       return;
     }
     setPlatformsLoading(true);
+    setGenerationProgress(10, true, `platforms-${id}`);
     const script = { hook: speech.hook, context: speech.context, demo: speech.demo, cta: speech.cta };
     try {
       const platforms = await generatePlatforms(script);
@@ -132,8 +154,9 @@ export default function SpeechDetail() {
       addToast(`Erreur plateformes : ${msg}. Vérifiez la connexion internet.`, 'error');
     } finally {
       setPlatformsLoading(false);
+      setGenerationProgress(0, false, '');
     }
-  }, [id, speech, addToast]);
+  }, [id, speech, addToast, setGenerationProgress]);
 
   const debouncedSave = useCallback((field, value) => {
     if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
@@ -386,8 +409,12 @@ export default function SpeechDetail() {
             <div
               key={key}
               className="rounded-xl border overflow-hidden"
-              style={{ borderColor: 'var(--sf-border)', backgroundColor: 'var(--sf-card)' }}
-              style={{ borderLeftWidth: 4, borderLeftColor: color }}
+              style={{
+                borderColor: 'var(--sf-border)',
+                backgroundColor: 'var(--sf-card)',
+                borderLeftWidth: 4,
+                borderLeftColor: color,
+              }}
             >
               <div className="flex items-center justify-between px-4 py-2 border-b border-[var(--sf-border)]" style={{ backgroundColor: 'var(--sf-card-hover)' }}>
                 <span className="text-[13px] font-semibold" style={{ color }}>{label}</span>
