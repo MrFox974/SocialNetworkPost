@@ -1,4 +1,4 @@
-// handler.js (Lambda)ddqzdz
+// handler.js (Lambda)d
 const serverless = require('serverless-http');
 const app = require('./app');
 
