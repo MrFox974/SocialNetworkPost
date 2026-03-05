@@ -1,4 +1,4 @@
-service: backend-lambda
+service: backend-lambda-SocialNetwork
 
 provider:
   name: aws
@@ -35,6 +35,9 @@ provider:
     STRIPE_SECRET_KEY: ""
     STRIPE_PRODUCT_MAITRISE: ""
     STRIPE_PRODUCT_PERFORMANCE: ""
+    # À renseigner dans la console Lambda (Configuration > Variables d'env) ou via SSM
+    OPENAI_API_KEY: ""
+
 
 functions:
   api:
