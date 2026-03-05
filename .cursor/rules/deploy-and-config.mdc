@@ -102,7 +102,7 @@ Sert uniquement à faire tourner Postgres en local ; le backend lit `DATABASE_*`
 | Contexte | Fichier / lieu | Exemples |
 |----------|----------------|----------|
 | Backend local | backend/.env (depuis .env.example) | DATABASE_*, PORT, CORS_ORIGIN, JWT_* |
-| Backend prod | serverless.yml provider.environment | Idem, valeurs réelles (éviter secrets en clair dans le repo) |
+| Backend prod | serverless.yml provider.environment | Idem ; **secrets** (OPENAI, Stripe, etc.) via **GitHub Secrets** + injection dans le workflow → voir règles `secrets-and-github-actions.mdc` |
 | Frontend local | frontend/.env (depuis .env.example) | VITE_PROTOCOLE, VITE_SERVER_HOST, VITE_SERVER_PORT |
 | Frontend prod | Console Amplify (build env) + amplify.yml env | VITE_* passées au build |
 

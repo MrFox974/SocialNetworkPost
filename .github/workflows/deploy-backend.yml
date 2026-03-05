@@ -43,5 +43,9 @@ jobs:
           aws-region: eu-west-3
 
       - name: Deploy with Serverless
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          STRIPE_SECRET_KEY: ${{ secrets.STRIPE_SECRET_KEY }}
+        
         run: npx serverless deploy
 
