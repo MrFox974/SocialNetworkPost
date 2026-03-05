@@ -35,10 +35,9 @@ provider:
     STRIPE_SECRET_KEY: ""
     STRIPE_PRODUCT_MAITRISE: ""
     STRIPE_PRODUCT_PERFORMANCE: ""
-    # À renseigner dans la console Lambda (Configuration > Variables d'env) ou via SSM
-    OPENAI_API_KEY: ""
+    OPENAI_API_KEY:
 
-
+    
 functions:
   api:
     handler: handler.handler
