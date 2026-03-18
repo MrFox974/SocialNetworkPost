@@ -6,18 +6,29 @@ const app = express()
 const { connectToDB, connectModels } = require('./config/database')
 const cors = require('cors')
 
-// Configuration CORS : accepte uniquement l'origine définie dans CORS_ORIGIN
+// Configuration CORS : whitelist d'origines autorisées (strict)
+// - CORS_ORIGIN peut contenir plusieurs origines séparées par des virgules
+// - FRONTEND_URL peut servir d'origine autorisée (ex. pour liens emails + app)
+// - CLIENT_IP (host Amplify) est converti en https://<host>
 // Retire le slash final pour matcher l'en-tête Origin envoyé par le navigateur (sans slash)
-const allowedOrigin = (process.env.CORS_ORIGIN || 'http://localhost:5173').trim().replace(/\/$/, '');
+const normalizeOrigin = (value) => (value || '').trim().replace(/\/$/, '');
 
-console.log('CORS Configuration - Allowed Origin:', allowedOrigin);
+const allowedOrigins = [
+  ...(process.env.CORS_ORIGIN || '').split(',').map(normalizeOrigin).filter(Boolean),
+  normalizeOrigin(process.env.FRONTEND_URL),
+  process.env.CLIENT_IP ? normalizeOrigin(`https://${process.env.CLIENT_IP}`) : '',
+  // Fallback dev local si aucune variable n'est fournie
+  'http://localhost:5173',
+].filter(Boolean);
 
-const isOriginAllowed = (origin) => !origin || origin === allowedOrigin;
+console.log('CORS Configuration - Allowed Origins:', allowedOrigins);
+
+const isOriginAllowed = (origin) => !origin || allowedOrigins.includes(normalizeOrigin(origin));
 
 // Un seul middleware CORS pour éviter le header Access-Control-Allow-Origin en double
 app.use(cors({
   origin: function (origin, callback) {
-    console.log('CORS check - Origin:', origin, 'Allowed:', allowedOrigin);
+    console.log('CORS check - Origin:', origin, 'Allowed:', allowedOrigins);
     // Pas d'Origin ou origine autorisée → accepter
     if (isOriginAllowed(origin)) {
       return callback(null, true);
@@ -49,8 +60,8 @@ app.use('/api/payment', require('./router/payment.route'));
 app.use((err, req, res, next) => {
   console.error('Express error:', err);
   const origin = req.headers.origin;
-  const allowed = (process.env.CORS_ORIGIN || 'http://localhost:5173').trim().replace(/\/$/, '');
-  const ok = !origin || origin === allowed;
+  const originNormalized = (origin || '').trim().replace(/\/$/, '');
+  const ok = !origin || allowedOrigins.includes(originNormalized);
 
   // Ajoute les headers CORS même en cas d'erreur
   if (ok && origin) {
