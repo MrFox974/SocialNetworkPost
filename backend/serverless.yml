@@ -42,6 +42,8 @@ functions:
   api:
     handler: handler.handler
     url: true  # Crée une Function URL publique (authorizer NONE par défaut)
+    timeout: 30
+    memorySize: 1536
 
 # Resource-based policy pour autoriser l'accdzqdqzès public à la Function URL
 # Deux permissions nécessaires : une pour InvokeFunctionUrl et une pour InvokeFunction
