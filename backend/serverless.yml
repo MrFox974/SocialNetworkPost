@@ -45,7 +45,7 @@ functions:
     timeout: 30
     memorySize: 1536
 
-# Resource-based policy pour autoriser l'accdzqdqzès public à la Function URL
+# Resource-based policy pour autoriser l'accdzqdqzès public àdzdqz la Function URL
 # Deux permissions nécessaires : une pour InvokeFunctionUrl et une pour InvokeFunction
 resources:
   Resources:
