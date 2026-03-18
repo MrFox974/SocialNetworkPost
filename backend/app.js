@@ -64,7 +64,7 @@ app.use((err, req, res, next) => {
   });
 });
 
-// Initialise la connexion DB (non-bloquant pour Lambda)
+// Initialise la connexion DB (non-bloquant pour Lambda) test
 connectToDB().catch(err => {
   console.error('Failed to connect to database:', err);
 });
