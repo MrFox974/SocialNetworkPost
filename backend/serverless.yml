@@ -7,13 +7,13 @@ provider:
   stage: dev
   environment:
     NODE_ENV: production
-    DATABASE_NAME: postgres
+    DATABASE_NAME: ${env:DATABASE_NAME, ''}
     # Injectés via GitHub Secrets/CI en prod, vides en local
     DATABASE_USER: ${env:DATABASE_USER, ''}
     DATABASE_PASSWORD: ${env:DATABASE_PASSWORD, ''}
     DATABASE_HOST: ${env:DATABASE_HOST, ''}
-    DATABASE_PORT: 5432
-    PROTOCOLE: https
+    DATABASE_PORT: ${env:DATABASE_PORT, '5432'}
+    PROTOCOLE: ${env:PROTOCOLE, 'https'}
     CORS_ORIGIN: ${env:CORS_ORIGIN, ''}
     CLIENT_IP: ${env:CLIENT_IP, ''}
     CLIENT_PORT: ${env:CLIENT_PORT, ''}
@@ -22,17 +22,17 @@ provider:
     JWT_SECRET: ${env:JWT_SECRET, ''}
     JWT_REFRESH_SECRET: ${env:JWT_REFRESH_SECRET, ''}
     # Auth : false = login simple, true = vérification email + Google
-    PRODUCTION: "false"
-    GOOGLE_CLIENT_ID: ""
-    APPLE_CLIENT_ID: ""
-    SMTP_HOST: "mail.gandi.net"
-    SMTP_PORT: "587"
-    SMTP_USER: ""
-    SMTP_PASS: ""
-    SMTP_FROM: ""
-    FRONTEND_URL: ""
-    TELEGRAM_BOT_TOKEN: ""
-    TELEGRAM_CHAT_ID: ""
+    PRODUCTION: ${env:PRODUCTION, 'false'}
+    GOOGLE_CLIENT_ID: ${env:GOOGLE_CLIENT_ID, ''}
+    APPLE_CLIENT_ID: ${env:APPLE_CLIENT_ID, ''}
+    SMTP_HOST: ${env:SMTP_HOST, ''}
+    SMTP_PORT: ${env:SMTP_PORT, ''}
+    SMTP_USER: ${env:SMTP_USER, ''}
+    SMTP_PASS: ${env:SMTP_PASS, ''}
+    SMTP_FROM: ${env:SMTP_FROM, ''}
+    FRONTEND_URL: ${env:FRONTEND_URL, ''}
+    TELEGRAM_BOT_TOKEN: ${env:TELEGRAM_BOT_TOKEN, ''}
+    TELEGRAM_CHAT_ID: ${env:TELEGRAM_CHAT_ID, ''}
     # Injectés au déploiement via GitHub Secrets (workflow) ; vides en local
     STRIPE_SECRET_KEY: ${env:STRIPE_SECRET_KEY, ''}
     OPENAI_API_KEY: ${env:OPENAI_API_KEY, ''}

@@ -44,8 +44,35 @@ jobs:
 
       - name: Deploy with Serverless
         env:
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          # Secrets (sensibles) - à créer dans Settings > Secrets and variables > Actions
+          DATABASE_NAME: ${{ secrets.DATABASE_NAME }}
+          DATABASE_USER: ${{ secrets.DATABASE_USER }}
+          DATABASE_PASSWORD: ${{ secrets.DATABASE_PASSWORD }}
+          DATABASE_HOST: ${{ secrets.DATABASE_HOST }}
+          DATABASE_PORT: ${{ secrets.DATABASE_PORT }}
+          JWT_SECRET: ${{ secrets.JWT_SECRET }}
+          JWT_REFRESH_SECRET: ${{ secrets.JWT_REFRESH_SECRET }}
           STRIPE_SECRET_KEY: ${{ secrets.STRIPE_SECRET_KEY }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          SMTP_HOST: ${{ secrets.SMTP_HOST }}
+          SMTP_PORT: ${{ secrets.SMTP_PORT }}
+          SMTP_USER: ${{ secrets.SMTP_USER }}
+          SMTP_PASS: ${{ secrets.SMTP_PASS }}
+          SMTP_FROM: ${{ secrets.SMTP_FROM }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+
+          # Vars (non sensibles) - à créer dans Settings > Variables (vars)
+          PROTOCOLE: ${{ vars.PROTOCOLE }}
+          CORS_ORIGIN: ${{ vars.CORS_ORIGIN }}
+          CLIENT_IP: ${{ vars.CLIENT_IP }}
+          CLIENT_PORT: ${{ vars.CLIENT_PORT }}
+          SERVER_PORT: ${{ vars.SERVER_PORT }}
+          SERVER_HOST: ${{ vars.SERVER_HOST }}
+          PRODUCTION: ${{ vars.PRODUCTION }}
+          GOOGLE_CLIENT_ID: ${{ vars.GOOGLE_CLIENT_ID }}
+          APPLE_CLIENT_ID: ${{ vars.APPLE_CLIENT_ID }}
+          FRONTEND_URL: ${{ vars.FRONTEND_URL }}
         
         run: npx serverless deploy
 
