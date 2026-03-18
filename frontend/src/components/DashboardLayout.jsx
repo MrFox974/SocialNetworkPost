@@ -36,7 +36,7 @@ export default function DashboardLayout() {
             className="text-xl font-bold tracking-tight transition-colors hover:opacity-90"
             style={{ fontFamily: 'var(--sf-heading-font)', color: 'var(--sf-cta)' }}
           >
-            SpeechForge
+            LvlScript
           </Link>
           <nav className="flex items-center gap-6">
             <Link
@@ -98,7 +98,7 @@ export default function DashboardLayout() {
       <footer className="mt-auto border-t py-8" style={{ borderColor: 'var(--sf-border)' }}>
         <div className="mx-auto px-6 sm:px-8 flex flex-col sm:flex-row items-center justify-between gap-4" style={{ maxWidth: 'var(--sf-content-width)' }}>
           <span className="text-sm" style={{ color: 'var(--sf-text-dim)' }}>
-            © {new Date().getFullYear()} SpeechForge
+            © {new Date().getFullYear()} LvlScript
           </span>
           <span className="text-sm" style={{ color: 'var(--sf-text-muted)' }}>
             Design · Code · Content

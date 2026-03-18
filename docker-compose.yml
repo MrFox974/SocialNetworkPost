@@ -1,7 +1,6 @@
 # Lancer en local : docker compose up -d
 # Backend : cd backend && npm run dev (connexion à Postgres sur localhost:5432)
 # Frontend : cd frontend && npm run dev
-version: '3.8'
 
 services:
   postgres:
@@ -13,7 +12,7 @@ services:
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: social-network-db
     ports:
-      - "5432:5432"
+      - "127.0.0.1:5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:

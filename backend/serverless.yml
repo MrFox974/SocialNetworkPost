@@ -8,18 +8,19 @@ provider:
   environment:
     NODE_ENV: production
     DATABASE_NAME: postgres
-    DATABASE_USER: postgres
-    DATABASE_PASSWORD: )ltyBT|RPCFiaBf-L-2PsR#yIP8o
-    DATABASE_HOST: database-postgres.ctski2isu26z.eu-south-1.rds.amazonaws.com
+    # Injectés via GitHub Secrets/CI en prod, vides en local
+    DATABASE_USER: ${env:DATABASE_USER, ''}
+    DATABASE_PASSWORD: ${env:DATABASE_PASSWORD, ''}
+    DATABASE_HOST: ${env:DATABASE_HOST, ''}
     DATABASE_PORT: 5432
     PROTOCOLE: https
-    CORS_ORIGIN: https://main.d2foa299n6ioy9.amplifyapp.com
-    CLIENT_IP: main.d181l8v9krvus2.amplifyapp.com
-    CLIENT_PORT: 5748
-    SERVER_PORT: 8080
-    SERVER_HOST: backend-production-2f14.up.railway.app
-    JWT_SECRET: 095d69926a23f86c
-    JWT_REFRESH_SECRET: 83ez354d8ht4tsgs
+    CORS_ORIGIN: ${env:CORS_ORIGIN, ''}
+    CLIENT_IP: ${env:CLIENT_IP, ''}
+    CLIENT_PORT: ${env:CLIENT_PORT, ''}
+    SERVER_PORT: ${env:SERVER_PORT, ''}
+    SERVER_HOST: ${env:SERVER_HOST, ''}
+    JWT_SECRET: ${env:JWT_SECRET, ''}
+    JWT_REFRESH_SECRET: ${env:JWT_REFRESH_SECRET, ''}
     # Auth : false = login simple, true = vérification email + Google
     PRODUCTION: "false"
     GOOGLE_CLIENT_ID: ""

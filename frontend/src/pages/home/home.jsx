@@ -63,7 +63,7 @@ const PLATFORM_PREVIEWS = [
 
 function Home() {
   useEffect(() => {
-    document.title = 'SpeechForge - Générateur de scripts vidéo qui convertissent';
+    document.title = 'LvlScript - Générateur de scripts vidéo qui convertissent';
 
     const ensureMeta = (name, content) => {
       let tag = document.querySelector(`meta[name="${name}"]`);
@@ -85,10 +85,10 @@ function Home() {
       tag.setAttribute('content', content);
     };
 
-    const description = 'SpeechForge génère des scripts structurés, apprend des meilleurs contenus et adapte en un clic pour chaque réseau social.';
+    const description = 'LvlScript génère des scripts structurés, apprend des meilleurs contenus et adapte en un clic pour chaque réseau social.';
     ensureMeta('description', description);
     ensureMeta('robots', 'index, follow');
-    ensurePropertyMeta('og:title', 'SpeechForge - Générateur de scripts vidéo');
+    ensurePropertyMeta('og:title', 'LvlScript - Générateur de scripts vidéo');
     ensurePropertyMeta('og:description', description);
     ensurePropertyMeta('og:type', 'website');
   }, []);
@@ -118,7 +118,7 @@ function Home() {
                 className="text-lg font-semibold tracking-tight"
                 style={{ fontFamily: 'var(--sf-heading-font)', color: 'var(--sf-text)' }}
               >
-                SpeechForge
+                LvlScript
               </span>
               <span className="text-xs truncate" style={{ color: 'var(--sf-text-dim)' }}>
                 Des scripts qui transforment en clients.
@@ -136,7 +136,7 @@ function Home() {
             </a>
             <a
               href="/login"
-              className="inline-flex items-center justify-center rounded-full px-5 py-2.5 text-sm font-semibold shadow-md hover:shadow-lg transition-all"
+              className="inline-flex items-center justify-center rounded-full px-5 py-2.5 text-sm font-semibold shadow-md hover:shadow-lg transition-all whitespace-nowrap text-center w-full sm:w-auto"
               style={{ backgroundColor: 'var(--sf-cta)', color: 'var(--sf-cta-text)' }}
             >
               Essai gratuit
@@ -161,19 +161,19 @@ function Home() {
                 </span>
               </h1>
               <p className="text-lg sm:text-xl leading-relaxed max-w-2xl" style={{ color: 'var(--sf-text-muted)' }}>
-                Tu génères tes scripts, SpeechForge apprend de ce qui performe et tu adaptes instantanément pour tous tes réseaux.
+                Tu génères tes scripts, LvlScript apprend de ce qui performe et tu adaptes instantanément pour tous tes réseaux.
               </p>
               <div className="flex flex-wrap gap-3">
                 <a
                   href="/login"
-                  className="sf-cta-button text-base sm:text-lg bg-[var(--sf-cta)] hover:bg-[var(--sf-cta-hover)] shadow-md hover:shadow-lg"
+                  className="sf-cta-button text-base sm:text-lg bg-[var(--sf-cta)] hover:bg-[var(--sf-cta-hover)] shadow-md hover:shadow-lg whitespace-nowrap text-center w-full sm:w-auto"
                   style={{ color: 'var(--sf-cta-text)' }}
                 >
                   Commencer maintenant
                 </a>
                 <a
                   href="#specificites"
-                  className="sf-cta-button text-base sm:text-lg border"
+                  className="sf-cta-button text-base sm:text-lg border whitespace-nowrap text-center w-full sm:w-auto"
                   style={{ borderColor: 'var(--sf-border)', color: 'var(--sf-text-muted)', backgroundColor: 'var(--sf-card)' }}
                 >
                   Voir les 3 spécificités
@@ -308,19 +308,19 @@ function Home() {
               de ta prochaine vidéo.
             </h2>
             <p className="text-lg sm:text-xl max-w-2xl mx-auto" style={{ color: 'var(--sf-text-muted)' }}>
-              Lance SpeechForge aujourd&apos;hui et transforme tes idées en contenu qui convertit.
+              Lance LvlScript aujourd&apos;hui et transforme tes idées en contenu qui convertit.
             </p>
             <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
               <a
                 href="/login"
-                className="sf-cta-button text-base sm:text-lg bg-[var(--sf-cta)] hover:bg-[var(--sf-cta-hover)] shadow-md hover:shadow-lg"
+                className="sf-cta-button text-base sm:text-lg bg-[var(--sf-cta)] hover:bg-[var(--sf-cta-hover)] shadow-md hover:shadow-lg whitespace-nowrap text-center w-full sm:w-auto"
                 style={{ color: 'var(--sf-cta-text)' }}
               >
                 Démarrer gratuitement
               </a>
               <a
                 href="/login"
-                className="sf-cta-button text-base sm:text-lg border"
+                className="sf-cta-button text-base sm:text-lg border whitespace-nowrap text-center w-full sm:w-auto"
                 style={{ borderColor: 'var(--sf-border)', color: 'var(--sf-text-muted)', backgroundColor: 'var(--sf-card)' }}
               >
                 Voir le tableau de bord
@@ -335,7 +335,7 @@ function Home() {
           className="mx-auto px-6 sm:px-8 py-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-sm"
           style={{ maxWidth: 'var(--sf-content-width)', color: 'var(--sf-text-dim)' }}
         >
-          <p>© {new Date().getFullYear()} SpeechForge. Tous droits réservés.</p>
+          <p>© {new Date().getFullYear()} LvlScript. Tous droits réservés.</p>
           <div className="flex gap-4">
             <span>Confidentialité</span>
             <span>Conditions</span>

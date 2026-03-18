@@ -108,7 +108,7 @@ export default function Login() {
       <div className="w-full max-w-[420px] rounded-xl p-8 sm:p-10 shadow-xl sf-card-style">
         <p className="sf-section-label">Connexion</p>
         <h1 className="sf-heading-display mt-1" style={{ fontFamily: 'var(--sf-heading-font)', color: 'var(--sf-cta)' }}>
-          SpeechForge
+          LvlScript
         </h1>
         <p className="sf-subtitle-bracket mt-2 mb-8">
           (génère tes scripts vidéo pour 5 plateformes)
