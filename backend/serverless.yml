@@ -43,7 +43,7 @@ functions:
     handler: handler.handler
     url: true  # Crée une Function URL publique (authorizer NONE par défaut)
 
-# Resource-based policy pour autoriser l'accès public à la Function URL
+# Resource-based policy pour autoriser l'accdzqdqzès public à la Function URL
 # Deux permissions nécessaires : une pour InvokeFunctionUrl et une pour InvokeFunction
 resources:
   Resources:
