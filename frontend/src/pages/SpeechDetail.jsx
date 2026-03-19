@@ -253,9 +253,9 @@ export default function SpeechDetail() {
   const backState = returnTab ? { tab: returnTab } : fromProject ? { tab: 'proposals' } : undefined;
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 px-4 sm:px-0">
       {/* Barre avec bouton retour */}
-      <div className="flex items-center gap-4">
+      <div className="flex flex-wrap items-center gap-4">
         <Link
           to={backTo}
           state={backState}
@@ -313,7 +313,7 @@ export default function SpeechDetail() {
             return (
               <div
                 key={key}
-                className={`shrink-0 w-[300px] min-w-[300px] rounded-xl border-2 ${meta.border} overflow-hidden flex flex-col shadow-lg`}
+                className={`shrink-0 w-[260px] min-w-[260px] sm:w-[300px] sm:min-w-[300px] rounded-xl border-2 ${meta.border} overflow-hidden flex flex-col shadow-lg`}
                 style={{ backgroundColor: 'var(--sf-card)' }}
               >
                 <div className={`flex items-center justify-between px-4 py-3 ${meta.header}`}>
@@ -482,11 +482,11 @@ export default function SpeechDetail() {
       <div className="flex flex-col items-center gap-4 pt-4">
         {isDraft ? (
           <>
-            <div className="flex flex-wrap items-center justify-center gap-3">
+            <div className="flex flex-col sm:flex-row flex-wrap items-stretch sm:items-center justify-center gap-3 w-full">
               <button
                 type="button"
                 onClick={handleToggleSelection}
-                className={`px-6 py-3 rounded-xl font-medium text-base transition-all ${
+                className={`px-6 py-3 rounded-xl font-medium text-base transition-all w-full sm:w-auto ${
                   speech.in_selection
                     ? 'bg-[var(--sf-border)] border border-[var(--sf-border-light)] hover:bg-[var(--sf-card-hover)]'
                     : 'bg-[var(--sf-accent)] hover:opacity-90'
@@ -498,7 +498,7 @@ export default function SpeechDetail() {
               <button
                 type="button"
                 onClick={() => setPublishModal(true)}
-                className="px-12 py-4 rounded-xl font-semibold text-base transition-all bg-[var(--sf-cta)] hover:opacity-90"
+                className="px-8 sm:px-12 py-4 rounded-xl font-semibold text-base transition-all bg-[var(--sf-cta)] hover:opacity-90 w-full sm:w-auto"
             style={{ color: 'var(--sf-cta-text)' }}
               >
                 Mettre en ligne
@@ -545,7 +545,7 @@ export default function SpeechDetail() {
             <div className="px-4 py-2 rounded-lg border font-medium bg-[var(--sf-cta)]/10" style={{ borderColor: 'rgba(72,240,183,0.5)', color: 'var(--sf-cta)' }}>
               En ligne depuis le {formatDate(speech.published_at)}
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center justify-center gap-2">
               <span className="text-sm" style={{ color: 'var(--sf-text-muted)' }}>Score :</span>
               {[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((n) => (
                 <button
@@ -553,7 +553,7 @@ export default function SpeechDetail() {
                   type="button"
                   disabled={scoreUpdating}
                   onClick={() => handleScoreChange(n)}
-                  className={`w-8 h-8 rounded-full text-sm font-medium transition-all ${
+                  className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full text-xs sm:text-sm font-medium transition-all ${
                     speech.score === n ? 'bg-[var(--sf-cta)] text-[var(--sf-cta-text)]' : 'bg-[var(--sf-border)] text-[var(--sf-text-muted)] hover:text-[var(--sf-text)]'
                   }`}
                 >
