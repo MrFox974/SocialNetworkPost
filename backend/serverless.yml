@@ -21,7 +21,7 @@ provider:
     SERVER_HOST: ${env:SERVER_HOST, ''}
     JWT_SECRET: ${env:JWT_SECRET, ''}
     JWT_REFRESH_SECRET: ${env:JWT_REFRESH_SECRET, ''}
-    # Auth : false = login simple, true = vérification email + Google
+    # Auth : false = login simple, true = vérification email + Google 2
     PRODUCTION: ${env:PRODUCTION, 'false'}
     GOOGLE_CLIENT_ID: ${env:GOOGLE_CLIENT_ID, ''}
     APPLE_CLIENT_ID: ${env:APPLE_CLIENT_ID, ''}
