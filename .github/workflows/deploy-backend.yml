@@ -64,7 +64,7 @@ jobs:
 
           # Vars (non sensibles) - à créer dans Settings > Variables (vars)
           PROTOCOLE: ${{ vars.PROTOCOLE }}
-          CORS_ORIGIN: ${{ vars.CORS_ORIGIN }}
+          CORS_ORIGIN: ${{ secrets.CORS_ORIGIN }}
           CLIENT_IP: ${{ vars.CLIENT_IP }}
           CLIENT_PORT: ${{ vars.CLIENT_PORT }}
           SERVER_PORT: ${{ vars.SERVER_PORT }}
